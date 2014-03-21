@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdio.h> 
+#include <math.h>
 
 #include <GL/glut.h>
 
@@ -125,3 +126,8 @@ typedef struct {
     std::vector<PolygonPatch> polygonPatchs;
     std::vector<Sphere> spheres;
 } NFF;
+
+typedef struct {
+    glm::vec3 origin;
+	glm::vec3 direction;
+} Ray;

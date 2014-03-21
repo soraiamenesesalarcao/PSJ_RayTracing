@@ -83,7 +83,6 @@
     <ClCompile Include="..\src\Color.cpp" />
     <ClCompile Include="..\src\ConfigLoader.cpp" />
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\Ray.cpp" />
     <ClCompile Include="..\src\RayTracer.cpp" />
     <ClCompile Include="..\src\Scene.cpp" />
   </ItemGroup>
@@ -92,7 +91,6 @@
     <ClInclude Include="..\src\Color.h" />
     <ClInclude Include="..\src\ConfigLoader.h" />
     <ClInclude Include="..\src\Definitions.h" />
-    <ClInclude Include="..\src\Ray.h" />
     <ClInclude Include="..\src\RayTracer.h" />
     <ClInclude Include="..\src\Scene.h" />
   </ItemGroup>

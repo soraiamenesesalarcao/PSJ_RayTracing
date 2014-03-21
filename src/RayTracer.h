@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Color.h"
-#include "Ray.h"
 #include "Definitions.h"
 
 class RayTracer {

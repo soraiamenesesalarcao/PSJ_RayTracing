@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Color.h"
-#include "Ray.h"
 #include "Camera.h"
 #include "Definitions.h"
 #include "ConfigLoader.h"

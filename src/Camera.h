@@ -1,15 +1,14 @@
 #pragma once
 
-#include "Ray.h"
 #include "Definitions.h"
 
 
 class Camera {
     private:
 		float _winWidth, _winHeight; //ResX, ResY
-		Position eye; //from
-		Position at;
-		Position up;
+		glm::vec3 eye; //from
+		glm::vec3 at;
+		glm::vec3 up;
 		float fovy; //angle
 		float near; //hither
 		float w, h;
@@ -17,9 +16,9 @@ class Camera {
 		Ray _ray;
 
 		//uvn frame
-		Position xe; 
-		Position ye;
-		Position ze;
+		glm::vec3 xe; 
+		glm::vec3 ye;
+		glm::vec3 ze;
 
 		float distance;
 		Camera();

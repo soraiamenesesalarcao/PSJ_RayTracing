@@ -18,21 +18,19 @@ Camera * Camera::getInstance(){
 void Camera::init(Viewpoint * viewpoint){
 	_winWidth = viewpoint->res[0];
 	_winHeight = viewpoint->res[1];
-	eye = viewpoint->from;
-	at = viewpoint->at;
-	up = viewpoint->up;
-	fovy = viewpoint->angle; //angle --- converter para radianos
-	near = viewpoint->hither; //hither
-	
-	w = _winWidth -1;
-	h = _winHeight -1;
+	eye = glm::vec3(viewpoint->from.px, viewpoint->from.py, viewpoint->from.pz);
+	at = glm::vec3(viewpoint->at.px, viewpoint->at.py, viewpoint->at.pz);
+	up = glm::vec3(viewpoint->up.px, viewpoint->up.py, viewpoint->up.pz);
+	fovy = glm::radians(viewpoint->angle); 
+	near = viewpoint->hither; //hither	
 
-	//fazer contas
-	distance = 0; 
-	//uvn frame
-	//xe; 
-	//ye;
-	//ze;
+	distance = glm::length2(eye - at);	
+	h = 2 * distance * glm::tan(fovy / 2.0);
+	w = h * (_winWidth / _winHeight);	
+
+	ze = glm::normalize(eye - at);
+	xe = glm::normalize(glm::cross(up, ze));
+	ye = glm::cross(ze, xe);
 }
 
 int Camera::GetResX() {
@@ -52,9 +50,7 @@ void Camera::setResY(int h) {
 }
 
 Ray Camera::PrimaryRay(float x, float y) {
-	_ray.setX(x);
-	_ray.setY(y);
-	return _ray;
+	return Ray();
 }
 
 
