@@ -124,7 +124,7 @@ namespace ConfigLoader {
                     
                     // Color and Shading Parameters
                     else if(splitedLine[0] == "f") {
-                        std::cout << "Color and Shading Parameters" << std::endl;
+                 //       std::cout << "Color and Shading Parameters" << std::endl;
                         flagBeforeObjects = false;
 						/*std::cout << "r: " << splitedLine[1] << " g: " << splitedLine[2] << " b: " << splitedLine[3]
                                   << " kd: " << splitedLine[4] << " ks: " << splitedLine[5] << " s: " << splitedLine[6]
