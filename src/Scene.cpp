@@ -18,7 +18,11 @@ Color Scene::rayTracing(Ray ray, float depth, float IoRefraction) {
 
 void Scene::init() {
 	_nff = new NFF();
-	ConfigLoader::loadSceneNFF("resources/jap.nff", *_nff);	
+	ConfigLoader::loadSceneNFF("resources/jap.nff", _nff);	
+
+	//std::cout << "Background: [ " << _nff->background.r << " " << _nff->background.g << " " << _nff->camera.from.pz << std::endl;
+	//std::cout << "Light: x: " << _nff->lights[0].position.px << " y: " <<  _nff->lights[0].position.py  << " z: " <<  _nff->lights[0].position.pz
+	//					<< " r: " <<  _nff->lights[0].color.r << " g: " <<  _nff->lights[0].color.g << " b: " <<  _nff->lights[0].color.b << std::endl;
 }
 
 void Scene::draw() {
