@@ -50,9 +50,6 @@ typedef struct{
 
 // Structure for the info of the camera
 typedef struct {
-    //std::vector<Position> from;
-    //std::vector<Position> at;
-    //std::vector<Position> up;
 	Position from;
     Position at;
 	Position up;
@@ -63,20 +60,15 @@ typedef struct {
 
 // Structure for the info of each light
 typedef struct {
-    //std::vector<Position> position;
 	Position position;
     RGB color;
 } Light;
 
 // Structure for the info of each cone or cylinder
 typedef struct {
-    //std::vector<Position> base_position;
 	Position base_position;
-//    std::vector<float> base_radius;
 	float base_radius;
- //   std::vector<Position> apex_position;
 	Position apex_position;
-  //  std::vector<float> apex_radius;
 	float apex_radius;
 
 	Material mtl;
@@ -84,9 +76,6 @@ typedef struct {
 
 // Structure for the info of each plan
 typedef struct{
-  /*  std::vector<Position> point_1;
-    std::vector<Position> point_2;
-    std::vector<Position> point_3;*/
 	Position point_1;
     Position point_2;
     Position point_3;
@@ -95,7 +84,6 @@ typedef struct{
 
 // Structure for the info of each sphere
 typedef struct {
-    //std::vector<Position> center;
 	Position center;
     float radius;
     Material mtl;
