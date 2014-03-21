@@ -10,6 +10,16 @@
 
 #include <GL/glut.h>
 
+#include <glm.hpp>
+#include <gtc/type_ptr.hpp>
+#include <gtx/intersect.hpp>
+#include <gtx/quaternion.hpp>
+#include <gtc/quaternion.hpp>
+#include <gtx/transform.hpp>
+#include <gtx/transform2.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <ext.hpp>
+
 // MACROS
 #define MAX_DEPTH 6
 

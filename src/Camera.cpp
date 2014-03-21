@@ -15,6 +15,26 @@ Camera * Camera::getInstance(){
 	return &instance;
 }
 
+void Camera::init(Viewpoint * viewpoint){
+	_winWidth = viewpoint->res[0];
+	_winHeight = viewpoint->res[1];
+	eye = viewpoint->from;
+	at = viewpoint->at;
+	up = viewpoint->up;
+	fovy = viewpoint->angle; //angle --- converter para radianos
+	near = viewpoint->hither; //hither
+	
+	w = _winWidth -1;
+	h = _winHeight -1;
+
+	//fazer contas
+	distance = 0; 
+	//uvn frame
+	//xe; 
+	//ye;
+	//ze;
+}
+
 int Camera::GetResX() {
 	return _winWidth;
 }

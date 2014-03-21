@@ -43,14 +43,14 @@
     <IntDir>..\obj\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_Debug</TargetName>
     <ExtensionsToDeleteOnClean>*.cdf;*.cache;*.obj;*.ilk;*.resources;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;*.tlog;*.manifest;*.res;*.pch;*.exp;*.idb;*.rep;*.xdc;*.pdb;*_manifest.rc;*.bsc;*.sbr;*.xml;*.metagen;*.bi;*.log</ExtensionsToDeleteOnClean>
-    <IncludePath>..\..\..\dependencies\glut\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\dependencies\glm;..\..\..\dependencies\glut\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\..\dependencies\glut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>..\..\..\bin\</OutDir>
     <IntDir>..\obj\$(Configuration)\</IntDir>
     <ExtensionsToDeleteOnClean>*.cdf;*.cache;*.obj;*.ilk;*.resources;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;*.tlog;*.manifest;*.res;*.pch;*.exp;*.idb;*.rep;*.xdc;*.pdb;*_manifest.rc;*.bsc;*.sbr;*.xml;*.metagen;*.bi;*.log</ExtensionsToDeleteOnClean>
-    <IncludePath>..\..\..\dependencies\glut\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\dependencies\glm;..\..\..\dependencies\glut\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\..\dependencies\glut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -85,6 +85,7 @@
     <ClCompile Include="..\src\Entity.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\Ray.cpp" />
+    <ClCompile Include="..\src\RayTracer.cpp" />
     <ClCompile Include="..\src\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +95,7 @@
     <ClInclude Include="..\src\Definitions.h" />
     <ClInclude Include="..\src\Entity.h" />
     <ClInclude Include="..\src\Ray.h" />
+    <ClInclude Include="..\src\RayTracer.h" />
     <ClInclude Include="..\src\Scene.h" />
   </ItemGroup>
   <ItemGroup>
