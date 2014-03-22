@@ -87,6 +87,48 @@ bool RayTracer::intersect(Polygon polygon, Ray ray){
 }
 
 bool RayTracer::intersect(ConeCylinder coneCylinder, Ray ray){
+	if(coneCylinder.apex_radius == coneCylinder.base_radius) { // cylinder 
+		float A = glm::pow2(ray.direction.x) + glm::pow2(ray.direction.y);
+		float B = (2 * ray.direction.x * ray.origin.x)  + (2 * ray.direction.y * ray.origin.y);
+		float C = glm::pow2(ray.origin.x) + glm::pow2(ray.origin.y) - 1;
+
+		float disc = glm::pow2(B) - 4*A*C;
+		float t1 = (-B - glm::sqrt(disc))/(2*A);
+		float t2 = (-B + glm::sqrt(disc))/(2*A);
+		
+		float z1 = ray.origin.z + t1 * ray.direction.z;
+		float z2 = ray.origin.z + t2 * ray.direction.z;
+
+		if((z1 > coneCylinder.base_position.pz && z1 < coneCylinder.apex_position.pz) 
+			|| (z2 > coneCylinder.base_position.pz && z2 < coneCylinder.apex_position.pz)) {
+				if(z1 < z2)
+					Pi = ray.origin + t1 * ray.direction;
+				else Pi = ray.origin + t2 * ray.direction;
+				return true;
+		}
+		else return false;
+	}
+	else { // cone
+	/*	float A = glm::pow2(ray.direction.x) + glm::pow2(ray.direction.y);
+		float B = (2 * ray.direction.x * ray.origin.x)  + (2 * ray.direction.y * ray.origin.y);
+		float C = glm::pow2(ray.origin.x) + glm::pow2(ray.origin.y) - 1;
+
+		float disc = glm::pow2(B) - 4*A*C;
+		float t1 = (-B - glm::sqrt(disc))/(2*A);
+		float t2 = (-B + glm::sqrt(disc))/(2*A);
+		
+		float z1 = ray.origin.z + t1 * ray.direction.z;
+		float z2 = ray.origin.z + t2 * ray.direction.z;
+
+		if((z1 > coneCylinder.base_position.pz && z1 < coneCylinder.apex_position.pz) 
+			|| (z2 > coneCylinder.base_position.pz && z2 < coneCylinder.apex_position.pz)) {
+				if(z1 < z2)
+					Pi = ray.origin + t1 * ray.direction;
+				else Pi = ray.origin + t2 * ray.direction;
+				return true;
+		}
+		else return false;*/
+	}
 	return false;
 }
 
