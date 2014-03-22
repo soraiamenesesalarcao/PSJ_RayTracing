@@ -3,8 +3,8 @@
 
 
 Camera::Camera() {	
-	_winWidth = 640; // ir buscar ao NFF
-	_winHeight = 480;	// ir buscar ao NFF
+	_winWidth = 640; //indicar valores por default....
+	_winHeight = 480;
 }
 
 Camera::~Camera() {
@@ -24,8 +24,8 @@ void Camera::init(Viewpoint * viewpoint){
 	fovy = glm::radians(viewpoint->angle); 
 	near = viewpoint->hither; //hither	
 
-	distance = glm::length2(eye - at);	
-	h = 2 * distance * glm::tan(fovy / 2.0);
+	df = glm::sqrt(glm::length2(eye - at)); //distance
+	h = 2 * df * glm::tan(fovy / 2.0);
 	w = h * (_winWidth / _winHeight);	
 
 	ze = glm::normalize(eye - at);
@@ -49,8 +49,25 @@ void Camera::setResY(int h) {
 	_winWidth = h;
 }
 
+/* Calcula o raio primario
+ * Recebe uma posicao de um pixel do viewport
+ *
+ * Tem como origem o valor do eye
+ * A direcao é calculada a partir de (de acordo com os slides):
+ * u(x) = (x/ResX-1)w
+ * v(y) = (y/ResY-1)h
+ * direction = -df*ze + h((y/ResY-1) - 1/2)ye + w((x/ResX-1) - 1/2)xe =
+ *			 = -df*ze + (v(y) - h/2)ye + (u(x) + w/2)xe
+ */
 Ray Camera::PrimaryRay(float x, float y) {
-	return Ray();
+	Ray ray;
+	float u_x = (x/(_winWidth-1)) * w;
+	float v_y = (y/(_winHeight-1)) * h;
+
+	ray.origin = eye;
+	ray.direction = -df*ze + (v_y - h/2)*ye + (u_x - w/2)*xe;
+
+	return ray;
 }
 
 

@@ -13,14 +13,14 @@ class Camera {
 		float near; //hither
 		float w, h;
 
-		Ray _ray;
+		//Ray _ray;
 
 		//uvn frame
 		glm::vec3 xe; 
 		glm::vec3 ye;
 		glm::vec3 ze;
 
-		float distance;
+		float df;
 		Camera();
 
     public: 
