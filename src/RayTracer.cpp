@@ -4,8 +4,28 @@ Color RayTracer::trace(Ray ray, int depth){
 	return Color();
 }
 
+glm::vec3 RayTracer::getNormal(){
+	return glm::normalize(normal);
+}
+
 bool RayTracer::intersect(Sphere sphere, Ray ray){
-	return false;
+	glm::vec3 D = glm::vec3(ray.direction[0], ray.direction[1], ray.direction[2]);
+	glm::vec3 O = glm::vec3(ray.origin[0], ray.origin[1], ray.origin[2]);
+
+	float A = glm::dot(D, D);
+	float B = 2 * glm::dot(D, O);
+	float C = glm::dot(O, O) - glm::pow2(sphere.radius);
+
+	float disc = glm::pow2(B) - 4*A*C;
+
+	if (disc < 0)
+		return false;
+	else{
+		float t = (-B - glm::sqrt(disc))/(2*A);
+		// calcular o ponto de intersecao mais próximo
+		Pi = ray.origin + ray.direction*t;
+		return true;
+	}
 }
 
 /* Calculo da intersecao de um raio a um plano 
@@ -39,10 +59,6 @@ bool RayTracer::intersect(Plan plan, Ray ray){
 	// calcular o ponto de intersecao
 	Pi = ray.origin + ray.direction*t;
 	return true;
-}
-
-glm::vec3 RayTracer::getNormal(){
-	return glm::normalize(normal);
 }
 
 bool RayTracer::intersect(Polygon polygon, Ray ray){
