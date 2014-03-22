@@ -26,6 +26,7 @@ bool RayTracer::intersect(Sphere sphere, Ray ray){
 		Pi = ray.origin + ray.direction*t;
 		return true;
 	}
+	return false;
 }
 
 /* Calculo da intersecao de um raio a um plano 
@@ -62,6 +63,21 @@ bool RayTracer::intersect(Plan plan, Ray ray){
 }
 
 bool RayTracer::intersect(Polygon polygon, Ray ray){
+	glm::vec3 v1 = glm::vec3(polygon.vertices[0].vx, polygon.vertices[0].vy, polygon.vertices[0].vz);
+	glm::vec3 v2 = glm::vec3(polygon.vertices[1].vx, polygon.vertices[1].vy, polygon.vertices[1].vz);
+	glm::vec3 v3 = glm::vec3(polygon.vertices[2].vx, polygon.vertices[2].vy, polygon.vertices[2].vz);
+
+	glm::vec3 N = glm::cross((v3 - v2), (v1 - v2));
+	glm::vec3 Q = v1;
+
+	float t = (glm::dot(N, (Q - ray.origin)))/(glm::dot(ray.origin, ray.direction));
+
+	if (t < 0)
+		return false;	
+	else {
+		Pi = ray.origin + ray.direction*t;
+		return true;
+	}
 	return false;
 }
 
