@@ -58,6 +58,7 @@ void Camera::setResY(int h) {
  * v(y) = (y/ResY-1)h
  * direction = -df*ze + h((y/ResY-1) - 1/2)ye + w((x/ResX-1) - 1/2)xe =
  *			 = -df*ze + (v(y) - h/2)ye + (u(x) + w/2)xe
+ * Direction tem que ser normalizada porque é uma direccao
  */
 Ray Camera::PrimaryRay(float x, float y) {
 	Ray ray;
@@ -65,7 +66,7 @@ Ray Camera::PrimaryRay(float x, float y) {
 	float v_y = (y/(_winHeight-1)) * h;
 
 	ray.origin = eye;
-	ray.direction = -df*ze + (v_y - h/2)*ye + (u_x - w/2)*xe;
+	ray.direction = glm::normalize(-df*ze + (v_y - h/2)*ye + (u_x - w/2)*xe); //it's a direction so don't forget to normalize
 
 	return ray;
 }

@@ -8,11 +8,29 @@ Scene * Scene::getInstance(){
 	return &instance;
 }
 
+
+// ciclo principal
 Color Scene::rayTracing(Ray ray, float depth, float IoRefraction) {
 	Color c;
-	c.setR(1.0);
-	c.setG(0.0);
-	c.setB(0.0);
+	RayTracer rt;
+	//determinar a intersecao mais proxima com um objecto
+	if(!rt.intersect(_nff->planes[0], ray)){ // se nao interceptar devolve a cor do background
+		c.setR(_nff->background.r);
+		c.setG(_nff->background.g);
+		c.setB(_nff->background.b);
+	}
+	else{
+		//color = termo ambiente do material do objecto
+		c.setR(_nff->planes[0].mtl.color.r);
+		c.setG(_nff->planes[0].mtl.color.g);
+		c.setB(_nff->planes[0].mtl.color.b);
+		//calcular a normal no ponto de interseccao
+		//no caso do plan a normal é a equação do plano
+		glm::vec3 normal = rt.getNormal();
+	}
+
+	//falta interseccao para o resto dos objectos...
+
 	return c;
 }
 

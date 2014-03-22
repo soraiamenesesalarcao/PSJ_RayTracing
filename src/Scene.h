@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Definitions.h"
 #include "ConfigLoader.h"
+#include "RayTracer.h"
 
 class Scene {
 

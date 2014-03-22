@@ -6,6 +6,8 @@
 class RayTracer {
 
 	private:
+		glm::vec3 normal;
+		glm::vec3 Pi; //Point intersection
 		
 	public:
 		bool intersect(Sphere sphere, Ray ray);
@@ -16,4 +18,5 @@ class RayTracer {
 		Ray reflectionRay(Ray ray); // ?!
 		Ray refractionRay(Ray ray); // ?!
 		Color trace(Ray ray, int depth);
+		glm::vec3 getNormal();
 };

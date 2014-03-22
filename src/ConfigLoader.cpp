@@ -222,6 +222,7 @@ namespace ConfigLoader {
                                   << " p2x: " << splitedLine[4] << " p2y: " << splitedLine[5] << " p2z: " << splitedLine[6]
                                   << " p3x: " << splitedLine[7] << " p3y: " << splitedLine[8] << " p3z: " << splitedLine[9] << std::endl;*/
 						plan.mtl = m;
+						scene1->planes.push_back(plan);
                     }
 
                     // Polygon
