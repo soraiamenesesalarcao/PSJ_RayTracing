@@ -8,6 +8,22 @@ glm::vec3 RayTracer::getNormal(){
 	return glm::normalize(normal);
 }
 
+
+bool RayTracer::intersectPolygonAux(Ray ray, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3){
+	glm::vec3 N = glm::cross((v3 - v2), (v1 - v2));
+	glm::vec3 Q = v1;
+
+	float t = (glm::dot(N, (Q - ray.origin)))/(glm::dot(ray.origin, ray.direction));
+
+	if (t < 0)
+		return false;	
+	else {
+		Pi = ray.origin + ray.direction*t;
+		return true;
+	}
+	return false;
+}
+
 bool RayTracer::intersect(Sphere sphere, Ray ray){
 	glm::vec3 D = glm::vec3(ray.direction[0], ray.direction[1], ray.direction[2]);
 	glm::vec3 O = glm::vec3(ray.origin[0], ray.origin[1], ray.origin[2]);
@@ -67,18 +83,7 @@ bool RayTracer::intersect(Polygon polygon, Ray ray){
 	glm::vec3 v2 = glm::vec3(polygon.vertices[1].vx, polygon.vertices[1].vy, polygon.vertices[1].vz);
 	glm::vec3 v3 = glm::vec3(polygon.vertices[2].vx, polygon.vertices[2].vy, polygon.vertices[2].vz);
 
-	glm::vec3 N = glm::cross((v3 - v2), (v1 - v2));
-	glm::vec3 Q = v1;
-
-	float t = (glm::dot(N, (Q - ray.origin)))/(glm::dot(ray.origin, ray.direction));
-
-	if (t < 0)
-		return false;	
-	else {
-		Pi = ray.origin + ray.direction*t;
-		return true;
-	}
-	return false;
+	return intersectPolygonAux(ray, v1, v2, v3);
 }
 
 bool RayTracer::intersect(ConeCylinder coneCylinder, Ray ray){
@@ -86,7 +91,11 @@ bool RayTracer::intersect(ConeCylinder coneCylinder, Ray ray){
 }
 
 bool RayTracer::intersect(PolygonPatch polygonPatch, Ray ray){
-	return false;
+	glm::vec3 v1 = glm::vec3(polygonPatch.vertices[0].vx, polygonPatch.vertices[0].vy, polygonPatch.vertices[0].vz);
+	glm::vec3 v2 = glm::vec3(polygonPatch.vertices[1].vx, polygonPatch.vertices[1].vy, polygonPatch.vertices[1].vz);
+	glm::vec3 v3 = glm::vec3(polygonPatch.vertices[2].vx, polygonPatch.vertices[2].vy, polygonPatch.vertices[2].vz);
+
+	return intersectPolygonAux(ray, v1, v2, v3);
 }
 
 Ray RayTracer::reflectionRay(Ray ray){

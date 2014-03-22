@@ -10,6 +10,7 @@ class RayTracer {
 		glm::vec3 Pi; //Point intersection
 		
 	public:
+		bool intersectPolygonAux(Ray ray, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
 		bool intersect(Sphere sphere, Ray ray);
 		bool intersect(Plan plan, Ray ray);
 		bool intersect(Polygon polygon, Ray ray);
