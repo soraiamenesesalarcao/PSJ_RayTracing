@@ -34,6 +34,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *pl, ray);
 		if(hasIntersectedLocal) {
 			if(!hasIntersectedGlobal) {
+				printf("plano!!!");
 				closestTi = Ti;
 				closestPi = Pi;
 				closestNormal = normal;
@@ -126,44 +127,43 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	//}
 	// Check ih there was an intersection
 	if(hasIntersectedGlobal) {
+		 float diffuseR = 0, diffuseG = 0, diffuseB = 0;
+		 float specularR = 0, specularG = 0, specularB = 0;
 
 	//	 Compute the illumination ------> LUZES
-		//glm::vec3 lightPoint;
-		//for(std::vector<Light>::iterator l = nff->lights.begin(); l != nff->lights.end(); l++) {
+		glm::vec3 lightPoint;
+		for(std::vector<Light>::iterator l = nff->lights.begin(); l != nff->lights.end(); l++) {
+			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
+			glm::vec3 L = glm::normalize(lightPoint - closestPi); // S // - closestPi);
+			float NdotL = std::max(glm::dot(glm::normalize(closestNormal), L), 0.0f); //para o calculo do material
 
-		//	lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
+			if(NdotL > 0) {
+				glm::vec3 V = Camera::getInstance()->computeV();
+				glm::vec3 H = glm::normalize(L + V);
+				float NdotH = std::max(glm::dot(glm::normalize(closestNormal), H), 0.0f);  //calculo da especular
+				
 
-		//	glm::vec3 L = glm::normalize(lightPoint - closestPi);
 
-		//	/*std::cout << "LightPoint: [ " << l->position.px << " " << l->position.py << " " << l->position.pz << "]" << std::endl;
-		//	std::cout << "closestPi: [ " << closestPi.x << " " << closestPi.y << " " << closestPi.z << "]" << std::endl;
-		//	std::cout << "L: [ " << L.x << " " << L.y << " " << L.z << "]" << std::endl;
+				diffuseR += material.color.r * l->color.r * NdotL;
+				diffuseG += material.color.g * l->color.g * NdotL;
+				diffuseR += material.color.b * l->color.b * NdotL;
 
-		//	std::cout << "NdotL 1: " << glm::dot(closestNormal, L) << std::endl;*/
+				specularB += material.color.r * glm::pow(NdotH, material.shine);
+				specularG += material.color.g * glm::pow(NdotH, material.shine);
+				specularR += material.color.b * glm::pow(NdotH, material.shine);
 
-		//	float NdotL = std::max(glm::dot(closestNormal, L), 0.0f);
+				//material.color.r = material.color.r * material.kd * l->color.r * NdotL //diffuse
+					//				+ material.color.r * material.ks * glm::pow(NdotH, material.shine); // specular
+				//material.color.g = material.color.g * material.kd * l->color.g * NdotL //diffuse
+					//				+ material.color.g * material.ks * glm::pow(NdotH, material.shine); // specular
+				//material.color.b = material.color.b * material.kd * l->color.b * NdotL //diffuse
+					//				+ material.color.b * material.ks * glm::pow(NdotH, material.shine); // specular
+			} 
+		}
 
-		//	//std::cout << "NdotL: " << NdotL << std::endl;
-		//	if(NdotL > 0) {
-
-		//		
-
-		//	//	Ray shadowFeeler;
-		//	//	shadowFeeler.origin = ;
-		//	//	shadowFeeler.direction = L;
-		//	//	if() {
-		//			glm::vec3 V = Camera::getInstance()->computeV();
-		//			glm::vec3 H = glm::normalize(L + V);
-		//		
-		//			float NdotH = std::max(glm::dot(closestNormal, H), 0.0f);
-		//			material.color.r = (material.color.r * l->color.r) * 
-		//								(material.kd * NdotL //diffuse
-		//								+ material.ks * glm::pow(NdotH, material.shine)); // specular
-		//			material.color.g = material.kd * l->color.g * NdotL;
-		//			material.color.b = material.kd * l->color.b * NdotL;
-		//	//	}
-		//	} 
-		//}
+		material.color.r = material.kd * diffuseR + material.ks * specularR;
+		material.color.g = material.kd * diffuseG + material.ks * specularG;
+		material.color.b = material.kd * diffuseB + material.ks * specularB;
 
 		//Compute the secondary rays
 		/*
@@ -234,9 +234,9 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Plan p
 		return false;
 	}
 
-	if(NdotD < 0){
-		N = -N;
-	}
+	//if(NdotD < 0){
+		//N = -N;
+	//}
 	// calcular o ponto de intersecao
 	*Pi = ray.origin + ray.direction*t;
 	*Ti = t;

@@ -49,7 +49,7 @@ void setupOpenGL() {
 void setupGLUT(int argc, char* argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
-	glutInitWindowSize(RES_X, RES_Y);
+	glutInitWindowSize(RES_X-1, RES_Y-1);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("JAP Ray Tracing");
 

@@ -36,7 +36,7 @@ Color Scene::rayTracing(Ray ray, float depth, float IoRefraction) {
 
 void Scene::init() {
 	_nff = new NFF();
-	ConfigLoader::loadSceneNFF("resources/jap.nff", _nff);
+	ConfigLoader::loadSceneNFF("resources/jap_original.nff", _nff);
 	Camera::getInstance()->init(&(_nff->camera));
 	
 }
