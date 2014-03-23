@@ -91,8 +91,15 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		for(std::vector<Light>::iterator l = nff->lights.begin(); l != nff->lights.end(); l++) {
 			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
 			glm::vec3 L = glm::normalize(lightPoint - closestPi);
-
-			// to be continued
+			glm::vec3 V = Camera::getInstance()->computeV();
+			glm::vec3 H = glm::normalize(L + V);
+			float NdotL = std::max(glm::dot(closestNormal, L), 0.0f);
+			float NdotH = std::max(glm::dot(closestNormal, H), 0.0f);
+			material.color.r = (material.color.r * l->color.r) * 
+								(material.kd * NdotL //diffuse
+								+ material.ks * glm::pow(NdotH, material.shine)); // specular
+			material.color.g = material.kd * l->color.g * NdotL;
+			material.color.b = material.kd * l->color.b * NdotL;
 		}
 
 		//Compute the secondary rays
@@ -101,14 +108,18 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			if(material.kd > 0 || material.ks > 0) { 
 				Ray reflectionRay = computeReflectionRay(ray);
 				RGB reflectionColor = trace(nff, ray, depth + 1);
-				// to be continued
+				material.color.r += (reflectionColor.r / material.ks);
+				material.color.g += (reflectionColor.g / material.ks);
+				material.color.b += (reflectionColor.b / material.ks);
 			}
 
 			// Refraction
 			if(material.t > 0) {
 				Ray refractionRay = computeRefractionRay(ray);
 				RGB refractionColor = trace(nff, ray, depth + 1);
-				// to be continued
+				material.color.r += (refractionColor.r / material.t);
+				material.color.g += (refractionColor.g / material.t);
+				material.color.b += (refractionColor.b / material.t);
 			}
 		}
 	}

@@ -41,6 +41,10 @@ int Camera::GetResY(){
 	return _winHeight;
 }
 
+glm::vec3 Camera::computeV() {
+	return eye - at;
+}
+
 void Camera::setResX(int w) {
 	_winWidth = w;
 }

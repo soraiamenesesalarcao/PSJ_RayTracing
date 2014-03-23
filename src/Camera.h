@@ -30,8 +30,9 @@ class Camera {
 		void init(Viewpoint * viewpoint);
 		int GetResX();
 		int GetResY();
+		glm::vec3 computeV();
 		Ray PrimaryRay(float x, float y);
 		void setResX(int w);
 		void setResY(int h);
-        void put();	
+        void put();			
 	};

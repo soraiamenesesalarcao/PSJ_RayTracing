@@ -2,6 +2,7 @@
 
 #include "Color.h"
 #include "Definitions.h"
+#include "Camera.h"
 
 class RayTracer {
 

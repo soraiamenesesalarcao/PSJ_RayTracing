@@ -7,7 +7,8 @@
 #include <fstream>
 #include <sstream>
 #include <stdio.h> 
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 
 #include <GL/glut.h>
 
