@@ -16,8 +16,8 @@ class RayTracer {
 		bool intersect(glm::vec3 * Pi, Polygon polygon, Ray ray);
 		bool intersect(glm::vec3 * Pi, ConeCylinder coneCylinder, Ray ray);
 		bool intersect(glm::vec3 * Pi, PolygonPatch polygonPatch, Ray ray);
-		Ray reflectionRay(Ray ray); // ?!
-		Ray refractionRay(Ray ray); // ?!
-		Color trace(NFF * scene, Ray ray, int depth);
+		Ray computeReflectionRay(Ray ray); // ?!
+		Ray computeRefractionRay(Ray ray); // ?!
+		RGB trace(NFF * nff, int pointX, int pointY, Ray ray, int depth);
 		glm::vec3 getNormal();
 };

@@ -1,6 +1,6 @@
 #include "RayTracer.h"
 
-Color RayTracer::trace(NFF * nff, Ray ray, int depth){
+RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 	bool hasIntersectedGlobal = false;
 	bool hasIntersectedLocal = false;
 	glm::vec3 Pi;
@@ -84,10 +84,32 @@ Color RayTracer::trace(NFF * nff, Ray ray, int depth){
 	}
 
 	if(hasIntersectedGlobal) {
-		// houve interseccao => calcular raios secundarios
+		// Compute the illumination
+		//glm::vec3 currentPoint = glm::vec3(pointX, pointY, 0.0);
+		glm::vec3 lightPoint;
+		for(std::vector<Light>::iterator l = nff->lights.begin(); l != nff->lights.end(); l++) {
+			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
+			//glm::vec3 L = glm::normalize(lightPoint - currentPoint); // tudo errado :P			
+		}
+
+
+		//Compute the secondary rays
+		if(depth <= MAX_DEPTH) {
+			// Reflection
+			if(material.kd > 0 || material.ks > 0) { 
+				Ray reflectionRay = computeReflectionRay(ray);
+				RGB reflectionColor = trace(nff, pointX, pointY, ray, depth + 1);
+			}
+
+			// Refraction
+			if(material.t > 0) {
+				Ray refractionRay = computeRefractionRay(ray);
+				RGB refractionColor = trace(nff, pointX, pointY, ray, depth + 1);
+			}
+		}
 	}
 
-	return Color();
+	return material.color;
 }
 
 glm::vec3 RayTracer::getNormal(){
@@ -213,10 +235,10 @@ bool RayTracer::intersect(glm::vec3 * Pi, PolygonPatch polygonPatch, Ray ray){
 	return intersectPolygonAux(Pi, ray, v1, v2, v3);
 }
 
-Ray RayTracer::reflectionRay(Ray ray){
+Ray RayTracer::computeReflectionRay(Ray ray){
 	return ray; // nao e isto
 }// ?!
 
-Ray RayTracer::refractionRay(Ray ray){
+Ray RayTracer::computeRefractionRay(Ray ray){
 	return ray; // nao e isto
 }// ?!
