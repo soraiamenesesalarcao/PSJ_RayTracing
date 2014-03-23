@@ -1,10 +1,12 @@
 #include "RayTracer.h"
 
-RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
+RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	bool hasIntersectedGlobal = false;
 	bool hasIntersectedLocal = false;
 	glm::vec3 Pi;
 	glm::vec3 closestPi;
+	glm::vec3 normal;
+	glm::vec3 closestNormal;
 
 	// Default material
 	Material material;
@@ -17,7 +19,7 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 
 	// Check if there is an intersection
 	for(std::vector<Sphere>::iterator s = nff->spheres.begin(); s != nff->spheres.end(); s++) {
-		hasIntersectedLocal = intersect(&Pi, *s, ray);
+		hasIntersectedLocal = intersect(&Pi, &normal, *s, ray);
 		if(hasIntersectedLocal) {
 			if(glm::length(Pi - closestPi) < 0) { // distancia euclideana
 				closestPi = Pi;
@@ -30,7 +32,7 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 		}
 	}
 	for(std::vector<Polygon>::iterator p = nff->polygons.begin(); p != nff->polygons.end(); p++) {
-		hasIntersectedLocal = intersect(&Pi, *p, ray);
+		hasIntersectedLocal = intersect(&Pi, &normal, *p, ray);
 		if(hasIntersectedLocal) {
 			if(glm::length(Pi - closestPi) < 0) { // distancia euclideana
 				closestPi = Pi;
@@ -43,7 +45,7 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 		}
 	}
 	for(std::vector<PolygonPatch>::iterator pp = nff->polygonPatchs.begin(); pp != nff->polygonPatchs.end(); pp++) {
-		hasIntersectedLocal = intersect(&Pi, *pp, ray);
+		hasIntersectedLocal = intersect(&Pi, &normal, *pp, ray);
 		if(hasIntersectedLocal) {
 			if(glm::length(Pi - closestPi) < 0) { // distancia euclideana
 				closestPi = Pi;
@@ -57,7 +59,7 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 
 	}
 	for(std::vector<ConeCylinder>::iterator c = nff->coneAndCylinders.begin(); c != nff->coneAndCylinders.end(); c++) {
-		hasIntersectedLocal = intersect(&Pi, *c, ray);
+		hasIntersectedLocal = intersect(&Pi, &normal, *c, ray);
 		if(hasIntersectedLocal) {
 			if(glm::length(Pi - closestPi) < 0) { // distancia euclideana
 				closestPi = Pi;
@@ -70,7 +72,7 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 		}
 	}
 	for(std::vector<Plan>::iterator pl = nff->planes.begin(); pl != nff->planes.end(); pl++) {
-		hasIntersectedLocal = intersect(&Pi, *pl, ray);
+		hasIntersectedLocal = intersect(&Pi, &normal, *pl, ray);
 		if(hasIntersectedLocal) {
 			if(glm::length(Pi - closestPi) < 0) { // distancia euclideana
 				closestPi = Pi;
@@ -85,11 +87,10 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 
 	if(hasIntersectedGlobal) {
 		// Compute the illumination
-		//glm::vec3 currentPoint = glm::vec3(pointX, pointY, 0.0);
 		glm::vec3 lightPoint;
 		for(std::vector<Light>::iterator l = nff->lights.begin(); l != nff->lights.end(); l++) {
 			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
-			//glm::vec3 L = glm::normalize(lightPoint - currentPoint); // tudo errado :P			
+			glm::vec3 L = glm::normalize(lightPoint - closestPi);
 		}
 
 
@@ -98,13 +99,13 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 			// Reflection
 			if(material.kd > 0 || material.ks > 0) { 
 				Ray reflectionRay = computeReflectionRay(ray);
-				RGB reflectionColor = trace(nff, pointX, pointY, ray, depth + 1);
+				RGB reflectionColor = trace(nff, ray, depth + 1);
 			}
 
 			// Refraction
 			if(material.t > 0) {
 				Ray refractionRay = computeRefractionRay(ray);
-				RGB refractionColor = trace(nff, pointX, pointY, ray, depth + 1);
+				RGB refractionColor = trace(nff, ray, depth + 1);
 			}
 		}
 	}
@@ -112,9 +113,9 @@ RGB RayTracer::trace(NFF * nff, int pointX, int pointY, Ray ray, int depth){
 	return material.color;
 }
 
-glm::vec3 RayTracer::getNormal(){
-	return glm::normalize(normal);
-}
+//glm::vec3 RayTracer::getNormal(){
+//	return glm::normalize(normal);
+//}
 
 
 bool RayTracer::intersectPolygonAux(glm::vec3 * Pi, Ray ray, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3){
@@ -132,7 +133,7 @@ bool RayTracer::intersectPolygonAux(glm::vec3 * Pi, Ray ray, glm::vec3 v1, glm::
 	return false;
 }
 
-bool RayTracer::intersect(glm::vec3 * Pi, Sphere sphere, Ray ray){
+bool RayTracer::intersect(glm::vec3 * Pi, glm::vec3 * normal, Sphere sphere, Ray ray){
 	glm::vec3 D = glm::vec3(ray.direction[0], ray.direction[1], ray.direction[2]);
 	glm::vec3 O = glm::vec3(ray.origin[0], ray.origin[1], ray.origin[2]);
 
@@ -160,33 +161,33 @@ bool RayTracer::intersect(glm::vec3 * Pi, Sphere sphere, Ray ray){
  *     Se o resultado for 0 => a recta é paralela ao plano => não intersecta
  * 3 - calcular o t = - (N.origin / N.direction) 
  */
-bool RayTracer::intersect(glm::vec3 * Pi, Plan plan, Ray ray){
+bool RayTracer::intersect(glm::vec3 * Pi, glm::vec3 * normal, Plan plan, Ray ray){
 	glm::vec3 A = glm::vec3(plan.point_1.px, plan.point_1.py, plan.point_1.pz);
 	glm::vec3 B = glm::vec3(plan.point_2.px, plan.point_2.py, plan.point_2.pz);
 	glm::vec3 C = glm::vec3(plan.point_3.px, plan.point_3.py, plan.point_3.pz);
 
-	normal = glm::cross((B - A), (C - A));
+	*normal = glm::cross((B - A), (C - A));
 
-	float NdotD = glm::dot(normal, ray.direction);
+	float NdotD = glm::dot(*normal, ray.direction);
 	if(NdotD == 0){
 		return false;
 	}
 
-	float NdotO = glm::dot(normal, ray.origin);
+	float NdotO = glm::dot(*normal, ray.origin);
 	float t = - (NdotO/ NdotD);
 	if(t < 0){
 		return false;
 	}
 
 	if(NdotD < 0){
-		normal = -normal;
+		*normal = -(*normal);
 	}
 	// calcular o ponto de intersecao
 	*Pi = ray.origin + ray.direction*t;
 	return true;
 }
 
-bool RayTracer::intersect(glm::vec3 * Pi, Polygon polygon, Ray ray){
+bool RayTracer::intersect(glm::vec3 * Pi, glm::vec3 * normal, Polygon polygon, Ray ray){
 	glm::vec3 v1 = glm::vec3(polygon.vertices[0].vx, polygon.vertices[0].vy, polygon.vertices[0].vz);
 	glm::vec3 v2 = glm::vec3(polygon.vertices[1].vx, polygon.vertices[1].vy, polygon.vertices[1].vz);
 	glm::vec3 v3 = glm::vec3(polygon.vertices[2].vx, polygon.vertices[2].vy, polygon.vertices[2].vz);
@@ -194,7 +195,7 @@ bool RayTracer::intersect(glm::vec3 * Pi, Polygon polygon, Ray ray){
 	return intersectPolygonAux(Pi, ray, v1, v2, v3);
 }
 
-bool RayTracer::intersect(glm::vec3 * Pi, ConeCylinder coneCylinder, Ray ray){
+bool RayTracer::intersect(glm::vec3 * Pi, glm::vec3 * normal, ConeCylinder coneCylinder, Ray ray){
 	float A, B, C;
 	// cylinder 
 	if(coneCylinder.apex_radius == coneCylinder.base_radius) { 
@@ -227,7 +228,7 @@ bool RayTracer::intersect(glm::vec3 * Pi, ConeCylinder coneCylinder, Ray ray){
 	return false;
 }
 
-bool RayTracer::intersect(glm::vec3 * Pi, PolygonPatch polygonPatch, Ray ray){
+bool RayTracer::intersect(glm::vec3 * Pi, glm::vec3 * normal, PolygonPatch polygonPatch, Ray ray){
 	glm::vec3 v1 = glm::vec3(polygonPatch.vertices[0].vx, polygonPatch.vertices[0].vy, polygonPatch.vertices[0].vz);
 	glm::vec3 v2 = glm::vec3(polygonPatch.vertices[1].vx, polygonPatch.vertices[1].vy, polygonPatch.vertices[1].vz);
 	glm::vec3 v3 = glm::vec3(polygonPatch.vertices[2].vx, polygonPatch.vertices[2].vy, polygonPatch.vertices[2].vz);
