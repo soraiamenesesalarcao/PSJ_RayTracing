@@ -38,11 +38,14 @@ void Scene::init() {
 	_nff = new NFF();
 	ConfigLoader::loadSceneNFF("resources/jap.nff", _nff);
 	Camera::getInstance()->init(&(_nff->camera));
+	
 }
 
 void Scene::draw() {
 	int RES_X = Camera::getInstance()->GetResX();
 	int RES_Y = Camera::getInstance()->GetResY(); 
+	
+//	Camera::getInstance()->put();
 
 	//para cada pixel do viewport 
 	for (int y = 0; y < RES_Y; y++) {
@@ -50,11 +53,12 @@ void Scene::draw() {
 			//determinar em WCS o raio primario que vai do centro de projecao ao pixel
 			Ray ray = Camera::getInstance()->PrimaryRay(x, y);
 
-			
+			RGB color = RayTracer::getInstance()->trace(_nff, ray, 1);
 
-			Color color= rayTracing(ray, 1, 1.0); //depth=1, ior=1.0
-			glBegin(GL_POINTS);
-			glColor3f(color.r(), color.g(), color.b());
+		//	Color color= rayTracing(ray, 1, 1.0); //depth=1, ior=1.0
+			glBegin(GL_POINTS);		
+			glColor3f(color.r, color.g, color.b);
+			//glColor3f(color.r(), color.g(), color.b());
 			glVertex2f(x, y);
 			glEnd();
 			glFlush(); 
