@@ -8,6 +8,34 @@ RayTracer * RayTracer::getInstance(){
 	return &instance;
 }
 
+bool RayTracer::intersecta(NFF *nff, Ray ray){
+	bool hasIntersectedGlobal = false;
+	bool hasIntersectedLocal = false;
+
+	glm::vec3 Pi;
+	glm::vec3 normal;
+	float Ti;
+	bool shadow = false;
+
+	for(std::vector<Plan>::iterator pl = nff->planes.begin(); pl != nff->planes.end(); pl++) {
+		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *pl, ray);
+		//if(hasIntersectedLocal) {
+		if(Ti <= 1 && Ti >= 0){
+			return true;
+		}
+	}
+
+	for(std::vector<Sphere>::iterator s = nff->spheres.begin(); s != nff->spheres.end(); s++) {
+		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *s, ray);
+		//if(hasIntersectedLocal) {
+		if(Ti <= 1 && Ti >= 0){
+			return true;
+		}
+	}
+
+	return false;
+}
+
 RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	bool hasIntersectedGlobal = false;
 	bool hasIntersectedLocal = false;
@@ -25,16 +53,13 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	material.kd = 0.0;
 	material.ks = 0.0;
 	material.shine = 0.0;
-	material.t = 0.0;
-
-	
+	material.t = 0.0;	
 
 	// Check if there is an intersection
 	for(std::vector<Plan>::iterator pl = nff->planes.begin(); pl != nff->planes.end(); pl++) {
 		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *pl, ray);
 		if(hasIntersectedLocal) {
 			if(!hasIntersectedGlobal) {
-			//	printf("plano!!!");
 				closestTi = Ti;
 				closestPi = Pi;
 				closestNormal = normal;
@@ -135,39 +160,44 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		for(std::vector<Light>::iterator l = nff->lights.begin(); l != nff->lights.end(); l++) {
 			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
 			glm::vec3 L = glm::normalize(lightPoint - closestPi); // S // - closestPi);
+			
+			//SHADOWS FEELEERS
+			Ray shadowFeeleer;
+			glm::vec3 auxDir = glm::vec3(ray.direction.x * 0.0001, ray.direction.y * 0.0001, ray.direction.z * 0.0001); 
+			shadowFeeleer.origin = closestPi - auxDir;
+			shadowFeeleer.direction = L;
+			
 			float NdotL = std::max(glm::dot(glm::normalize(closestNormal), L), 0.0f); //para o calculo do material
 
 			if(NdotL > 0) {
-				glm::vec3 V = Camera::getInstance()->computeV();
-				glm::vec3 H = glm::normalize(L + V);
-				float NdotH = std::max(glm::dot(glm::normalize(closestNormal), H), 0.0f);  //calculo da especular
-				
+				// se intersecta com um shadow feeleer
+				if(intersecta(nff, shadowFeeleer)){
+					continue;
+				}
 
+				glm::vec3 V = glm::normalize(Camera::getInstance()->computeV());
+				glm::vec3 H = glm::normalize(-V + L);
+				float NdotH = std::max(glm::dot(glm::normalize(closestNormal), H), 0.0f);  //calculo da especular
 
 				diffuseR += material.color.r * l->color.r * NdotL;
 				diffuseG += material.color.g * l->color.g * NdotL;
 				diffuseR += material.color.b * l->color.b * NdotL;
 
-				specularB += material.color.r * glm::pow(NdotH, material.shine);
-				specularG += material.color.g * glm::pow(NdotH, material.shine);
-				specularR += material.color.b * glm::pow(NdotH, material.shine);
-
-				//material.color.r = material.color.r * material.kd * l->color.r * NdotL //diffuse
-					//				+ material.color.r * material.ks * glm::pow(NdotH, material.shine); // specular
-				//material.color.g = material.color.g * material.kd * l->color.g * NdotL //diffuse
-					//				+ material.color.g * material.ks * glm::pow(NdotH, material.shine); // specular
-				//material.color.b = material.color.b * material.kd * l->color.b * NdotL //diffuse
-					//				+ material.color.b * material.ks * glm::pow(NdotH, material.shine); // specular
-			} 
+				if(NdotH > 0){ 
+					specularB += material.color.r * l->color.r * glm::pow(NdotH, material.shine);
+					specularG += material.color.g * l->color.g * glm::pow(NdotH, material.shine);
+					specularR += material.color.b * l->color.b * glm::pow(NdotH, material.shine);
+				}
+			}
+			glm::vec3 ambient = glm::vec3(0.2, 0.2, 0.2);
+			material.color.r = ambient.x + material.kd * diffuseR + material.ks * specularR;
+			material.color.g = ambient.y + material.kd * diffuseG + material.ks * specularG;
+			material.color.b = ambient.z + material.kd * diffuseB + material.ks * specularB;
 		}
 
-		material.color.r = material.kd * diffuseR + material.ks * specularR;
-		material.color.g = material.kd * diffuseG + material.ks * specularG;
-		material.color.b = material.kd * diffuseB + material.ks * specularB;
-
 		//Compute the secondary rays
-		/*
-		if(depth <= MAX_DEPTH) {
+		
+		/*if(depth <= MAX_DEPTH) {
 			// Reflection
 			if(material.kd > 0 || material.ks > 0) { 
 				Ray reflectionRay = computeReflectionRay(ray);
@@ -175,20 +205,19 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 				material.color.r += (reflectionColor.r / material.ks);
 				material.color.g += (reflectionColor.g / material.ks);
 				material.color.b += (reflectionColor.b / material.ks);
-			}
+			}*/
 
 			// Refraction
-			if(material.t > 0) {
+			/*if(material.t > 0) {
 				Ray refractionRay = computeRefractionRay(ray);
 				RGB refractionColor = trace(nff, ray, depth + 1);
 				material.color.r += (refractionColor.r / material.t);
 				material.color.g += (refractionColor.g / material.t);
 				material.color.b += (refractionColor.b / material.t);
-			}
-		} */
+			}*/
+		//} 
 	}
-	//if (material.color.r == 0.0 && material.color.g == 0.0 && material.color.b == 0.0)
-	//	std::cout << "preto" << std::endl;
+
 	return material.color;
 }
 
@@ -239,6 +268,7 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Plan p
 	//if(NdotD < 0){
 		//N = -N;
 	//}
+
 	// calcular o ponto de intersecao
 	*Pi = ray.origin + ray.direction*t;
 	*Ti = t;
