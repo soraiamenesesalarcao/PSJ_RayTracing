@@ -34,7 +34,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *pl, ray);
 		if(hasIntersectedLocal) {
 			if(!hasIntersectedGlobal) {
-				printf("plano!!!");
+			//	printf("plano!!!");
 				closestTi = Ti;
 				closestPi = Pi;
 				closestNormal = normal;
@@ -187,7 +187,8 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			}
 		} */
 	}
-
+	//if (material.color.r == 0.0 && material.color.g == 0.0 && material.color.b == 0.0)
+	//	std::cout << "preto" << std::endl;
 	return material.color;
 }
 
@@ -228,7 +229,8 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Plan p
 		return false;
 	}
 
-	float NdotO = glm::dot(N, ray.origin);
+	glm::vec3 sub = ray.origin - A;
+	float NdotO = glm::dot(N, sub);
 	float t = - (NdotO/ NdotD);
 	if(t < 0){
 		return false;
