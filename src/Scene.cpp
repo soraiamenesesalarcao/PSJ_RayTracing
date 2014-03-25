@@ -36,7 +36,7 @@ Color Scene::rayTracing(Ray ray, float depth, float IoRefraction) {
 
 void Scene::init() {
 	_nff = new NFF();
-	ConfigLoader::loadSceneNFF("resources/jap_original.nff", _nff);
+	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _nff);
 	Camera::getInstance()->init(&(_nff->camera));
 	
 }
@@ -52,7 +52,6 @@ void Scene::draw() {
 		for (int x = 0; x < RES_X; x++) {
 			//determinar em WCS o raio primario que vai do centro de projecao ao pixel
 			Ray ray = Camera::getInstance()->PrimaryRay(x, y);
-
 			RGB color = RayTracer::getInstance()->trace(_nff, ray, 1);
 
 		//	Color color= rayTracing(ray, 1, 1.0); //depth=1, ior=1.0

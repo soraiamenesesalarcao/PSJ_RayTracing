@@ -14,7 +14,7 @@ namespace ConfigLoader {
 	void loadSceneNFF(const char* fileName, NFF * scene1){
 		std::string line = std::string();
         std::ifstream file (fileName);
-        int flagBeforeObjects = true;
+        bool flagBeforeObjects = true;
         int cylinderOrCone = 0;
         int vert_polygon = 0;
         int vert_polygon_patch = 0;

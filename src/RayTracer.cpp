@@ -8,6 +8,10 @@ RayTracer * RayTracer::getInstance(){
 	return &instance;
 }
 
+
+/*
+ * Verificacao de interseccoes para os raios shadows!!! 
+ */
 bool RayTracer::intersecta(NFF *nff, Ray ray){
 	bool hasIntersectedGlobal = false;
 	bool hasIntersectedLocal = false;
@@ -19,16 +23,14 @@ bool RayTracer::intersecta(NFF *nff, Ray ray){
 
 	for(std::vector<Plan>::iterator pl = nff->planes.begin(); pl != nff->planes.end(); pl++) {
 		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *pl, ray);
-		//if(hasIntersectedLocal) {
-		if(Ti <= 1 && Ti >= 0){
+		if(hasIntersectedLocal) {
 			return true;
 		}
 	}
 
 	for(std::vector<Sphere>::iterator s = nff->spheres.begin(); s != nff->spheres.end(); s++) {
 		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *s, ray);
-		//if(hasIntersectedLocal) {
-		if(Ti <= 1 && Ti >= 0){
+		if(hasIntersectedLocal) {
 			return true;
 		}
 	}
@@ -73,6 +75,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 				material = pl->mtl;
 			}
 		}
+
 	}
 	for(std::vector<Polygon>::iterator p = nff->polygons.begin(); p != nff->polygons.end(); p++) {
 		hasIntersectedLocal = intersect(&Pi,  &Ti, &normal, *p, ray);
@@ -163,49 +166,51 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		glm::vec3 lightPoint;
 		for(std::vector<Light>::iterator l = nff->lights.begin(); l != nff->lights.end(); l++) {
 			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
-			L = glm::normalize(lightPoint - closestPi); // S // - closestPi);
+			L = glm::normalize(lightPoint - closestPi);
 			
 			//SHADOWS FEELEERS
 			Ray shadowFeeleer;
-			
 			shadowFeeleer.origin = closestPi - auxDir;
 			shadowFeeleer.direction = L;
 			
-			float NdotL = std::max(glm::dot(N, L), 0.0f); //para o calculo do material
-
-			if(NdotL > 0) {
+			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
+			if(LdotN > 0) {
 				// se intersecta com um shadow feeleer
-				if(intersecta(nff, shadowFeeleer)){
-					continue;
-				}
-								
-				H = glm::normalize(-V + L);
-				float NdotH = std::max(glm::dot(N, H), 0.0f);  //calculo da especular
+				if(!intersecta(nff, shadowFeeleer)){
+					//continue;
+				//}			
+					diffuseR += material.kd * material.color.r * l->color.r * LdotN;
+					diffuseG += material.kd * material.color.g * l->color.g * LdotN;
+					diffuseR += material.kd * material.color.b * l->color.b * LdotN;
 
-				diffuseR += material.color.r * l->color.r * NdotL;
-				diffuseG += material.color.g * l->color.g * NdotL;
-				diffuseR += material.color.b * l->color.b * NdotL;
+					//H = glm::normalize(-V + L);
+					//vector reflexao especular
+					R = glm::normalize(2 * glm::dot(glm::normalize(auxDir), N) * N - L); //ou usa-se o -V
+					//float NdotH = std::max(glm::dot(N, H), 0.0f);  //calculo da especular
+					float RdotL = std::max(glm::dot(R,L), 0.0f);
+					if(RdotL > 0){ 
+						specularR += material.ks * material.color.r * l->color.r * glm::pow(RdotL, material.shine);
+						specularG += material.ks * material.color.g * l->color.g * glm::pow(RdotL, material.shine);
+						specularB += material.ks * material.color.b * l->color.b * glm::pow(RdotL, material.shine);
+					}
 
-				if(NdotH > 0){ 
-					specularB += material.color.r * l->color.r * glm::pow(NdotH, material.shine);
-					specularG += material.color.g * l->color.g * glm::pow(NdotH, material.shine);
-					specularR += material.color.b * l->color.b * glm::pow(NdotH, material.shine);
 				}
 			}
-			glm::vec3 ambient = glm::vec3(0.2, 0.2, 0.2);
-			material.color.r = std::min((ambient.x + material.kd * diffuseR + material.ks * specularR), 1.0f);
-			material.color.g =  std::min((ambient.y + material.kd * diffuseG + material.ks * specularG), 1.0f);
-			material.color.b =  std::min((ambient.z + material.kd * diffuseB + material.ks * specularB), 1.0f);
 		}
+
+		material.color.r = diffuseR + specularR;
+		material.color.g = diffuseG + specularG;
+		material.color.b = diffuseB + specularB;
+
 
 		//Compute the secondary rays
 		
-		if(depth <= MAX_DEPTH) {
-			glm::vec3 D = glm::vec3(ray.direction);
-			R = D - 2 * glm::dot(D, N) * N;
+		//if(depth < MAX_DEPTH) {
+			//glm::vec3 D = glm::vec3(ray.direction);
+			//R = D - 2 * glm::dot(D, N) * N;
 
 			// Reflection
-			/**/
+			/*
 			if(material.ks > 0) { 
 				Ray reflectionRay = computeReflectionRay(closestPi, R);
 				RGB reflectionColor = trace(nff, reflectionRay, depth + 1);
@@ -222,7 +227,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 				material.color.g += (refractionColor.g / material.t);
 				material.color.b += (refractionColor.b / material.t);
 			}*/
-		} 
+		//} 
 	}
 
 	return material.color;
@@ -299,33 +304,63 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Polygo
 	return intersectPolygonAux(Pi, Ti, normal, ray, v1, v2, v3);
 }
 
-
+/* Calculo da intersecao de um raio a uma esfera 
+ * 1 - normalizar vector direccao
+ * 2 - calcular o quadrado da distancia da origem do raio ao centro da esfera
+ * 3 - comparar o quadrado da distancia com o quadrado do raio da esfera, se for igual retorna falso
+ * 4 - calcular o B
+ */
 bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Sphere sphere, Ray ray){
-	glm::vec3 D = glm::vec3(ray.direction[0], ray.direction[1], ray.direction[2]);
+	//passo 1
+	glm::vec3 D = glm::normalize(glm::vec3(ray.direction[0], ray.direction[1], ray.direction[2]));
 	glm::vec3 O = glm::vec3(ray.origin[0], ray.origin[1], ray.origin[2]);
 	glm::vec3 C = glm::vec3(sphere.center.px, sphere.center.py, sphere.center.pz);
 
-	float a = glm::dot(D, D);
-	float b = 2 * D.x * (O.x - C.x) 
-			+ 2 * D.y * (O.y - C.y) 
-			+ 2 * D.z * (O.z - C.z);
-	float c = glm::dot(C, C) + glm::dot(O, O) - 2 * glm::dot(C, O) - glm::pow2(sphere.radius);
+	//passo 2
+	float dQuad = glm::pow2(C.x - O.x) + glm::pow2(C.y - O.y) + glm::pow2(C.z - O.z);
 
-	float disc = glm::pow2(b) - 4*a*c;
-
-	if (disc < 0)
+	//passo 3
+	float radiusQuad = glm::pow2(sphere.radius);
+	if(dQuad == radiusQuad){
 		return false;
-	else{
-		float t = (-b - glm::sqrt(disc))/(2*a);
-		// calcular o ponto de intersecao mais proximo
-		*Pi = ray.origin + ray.direction*t;
-		*Ti = t;
-		*normal = glm::normalize(glm::vec3((Pi->x - sphere.center.px)/sphere.radius, 
-							(Pi->y - sphere.center.py)/sphere.radius, 
-							(Pi->z - sphere.center.pz)/sphere.radius));
-		return true;
 	}
-	return false;
+
+	//passo 4
+	float B = D.x * (C.x - O.x) + D.y * (C.y - O.y) + D.z * (C.z - O.z);
+	
+	//passo 5
+	if(dQuad > radiusQuad){
+		if( B < 0)
+			return false;
+	}
+
+	//passo 6
+	float R = glm::pow2(B) - dQuad + radiusQuad;
+	if(R < 0){
+		return false;
+	}
+
+	//passo 7
+	if(dQuad > radiusQuad){
+		*Ti = B - glm::sqrt(R);
+	} 
+	else if(dQuad < radiusQuad){
+		*Ti = B + glm::sqrt(R);
+	}
+
+	//passo 8
+	*Pi = O + D * *Ti;
+
+	//passo 9
+	float t = *Ti;
+	glm::vec3 pi = *Pi;
+	*normal = glm::normalize((pi - C)/sphere.radius);
+
+	if(dQuad < radiusQuad){
+		*normal = *normal * -1.0f;
+	}
+
+	return true;
 }
 
 

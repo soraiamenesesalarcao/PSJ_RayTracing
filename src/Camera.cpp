@@ -24,8 +24,8 @@ void Camera::init(Viewpoint * viewpoint){
 	fovy = glm::radians(viewpoint->angle); 
 	near = viewpoint->hither; //hither	
 
-	//df = glm::sqrt(glm::length2(eye - at)); //distance
-	df = glm::length2(eye - at); //distance
+	df = glm::sqrt(glm::length2(eye - at)); //distance
+	//df = glm::length2(eye - at); //distance - isto só estava a fazer: x^2 + y^2 + z^2 --- faltava fazer a raiz!!!
 	h = 2 * df * glm::tan(fovy / 2.0);
 	w = h * (_winWidth / _winHeight);	
 
