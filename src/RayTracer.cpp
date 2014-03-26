@@ -153,6 +153,8 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	//		}
 	//	}
 	//}
+
+
 	// Check ih there was an intersection
 	if(hasIntersectedGlobal) {
 		 float diffuseR = 0, diffuseG = 0, diffuseB = 0;
@@ -161,7 +163,6 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		 glm::vec3 auxDir = glm::vec3(ray.direction.x * 0.001, ray.direction.y * 0.001, ray.direction.z * 0.001); 
 		 V = glm::normalize(Camera::getInstance()->computeV());
 		 N = glm::normalize(closestNormal);
-
 
 	//	 Compute the illumination
 		glm::vec3 lightPoint;
@@ -178,8 +179,8 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
 
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
-			if(LdotN > 0) {
-				
+
+			if(LdotN > 0) {		
 				// se intersecta com um shadow feeler
 				if(intersecta(nff, shadowFeeler)){
 					continue;
@@ -188,7 +189,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 				// Componente difusa
 				diffuseR += material.kd * material.color.r * l->color.r * LdotN;
 				diffuseG += material.kd * material.color.g * l->color.g * LdotN;
-				diffuseR += material.kd * material.color.b * l->color.b * LdotN;
+				diffuseB += material.kd * material.color.b * l->color.b * LdotN;
 
 				//componente especular
 				float RdotL = std::max(glm::dot(R,L), 0.0f);
@@ -200,6 +201,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			}//end if(LdotN > 0)
 
 		} //end for
+
 
 		material.color.r = diffuseR + specularR;
 		material.color.g = diffuseG + specularG;

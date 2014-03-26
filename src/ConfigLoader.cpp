@@ -79,6 +79,10 @@ namespace ConfigLoader {
 							l.position.px = atof(splitedLine[1].c_str());
 							l.position.py = atof(splitedLine[2].c_str());
 							l.position.pz = atof(splitedLine[3].c_str());	
+							// default
+							l.color.r = 0.5f;
+							l.color.g = 0.5f;
+							l.color.b = 0.5f;
                         }
                         else {
 							l.position.px = atof(splitedLine[1].c_str());
