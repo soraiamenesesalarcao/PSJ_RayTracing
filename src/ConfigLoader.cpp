@@ -161,18 +161,20 @@ namespace ConfigLoader {
                     else if(splitedLine[0] == "p"){
                         std::cout << "Polygon" << std::endl;
                         vert_polygon = atof(splitedLine[1].c_str());
+						polygon.vertices.clear();
                         continue;
                     }
                     else if(vert_polygon > 0){
+						
 						v.vx = atof(splitedLine[0].c_str());
 						v.vy = atof(splitedLine[1].c_str());
 						v.vz = atof(splitedLine[2].c_str());
 						polygon.vertices.push_back(v);
-
 						vert_polygon--;
 						if(vert_polygon == 0) {
 							polygon.mtl = m;
 							scene1->polygons.push_back(polygon);
+							
 						}
                     }
                         
