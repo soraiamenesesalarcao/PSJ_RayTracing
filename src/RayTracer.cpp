@@ -77,6 +77,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		}
 
 	}
+
 	for(std::vector<Polygon>::iterator p = nff->polygons.begin(); p != nff->polygons.end(); p++) {
 		hasIntersectedLocal = intersect(&Pi,  &Ti, &normal, *p, ray);
 		if(hasIntersectedLocal) {
@@ -159,7 +160,8 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	if(hasIntersectedGlobal) {
 		 float diffuseR = 0, diffuseG = 0, diffuseB = 0;
 		 float specularR = 0, specularG = 0, specularB = 0;
-		 glm::vec3 V, L, R, N;
+		 float niu2;
+		 glm::vec3 V, L, R, N, Vt;
 		 glm::vec3 auxDir = glm::vec3(ray.direction.x * 0.001, ray.direction.y * 0.001, ray.direction.z * 0.001); 
 		 V = glm::normalize(Camera::getInstance()->computeV());
 		 N = glm::normalize(closestNormal);
@@ -221,25 +223,100 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			}
 
 			// Refraction
-			/*if(material.t > 0) {
-				Ray refractionRay = computeRefractionRay(ray);
-				RGB refractionColor = trace(nff, ray, depth + 1);
-				material.color.r += (refractionColor.r / material.t);
-				material.color.g += (refractionColor.g / material.t);
-				material.color.b += (refractionColor.b / material.t);
-			}*/
+			if(material.t > 0) {
+				Vt = glm::dot(V, N) * N - V;
+				niu2 = material.indexRefraction;
+				Ray refractionRay = computeRefractionRay(closestPi, Vt, N, niu2);
+				RGB refractionColor = trace(nff, refractionRay, depth + 1);
+				material.color.r += (refractionColor.r * (1-material.t));
+				material.color.g += (refractionColor.g * (1-material.t));
+				material.color.b += (refractionColor.b * (1-material.t));
+			}
 		}
-
 	}
 
 	return material.color;
 }
 
+float RayTracer::isLeft(glm::vec2 P0, glm::vec2 P1, glm::vec2 P2)
+{
+	//std::cout << ((P1.x - P0.x) * (P2.y - P0.y) - (P2.x -  P0.x) * (P1.y - P0.y)) << std::endl;
+    return ((P1.x - P0.x) * (P2.y - P0.y) - (P2.x -  P0.x) * (P1.y - P0.y));
+}
+
+int RayTracer::windingNumber(std::vector<glm::vec2> vertices, glm::vec2 point) {
+	int wn = 0;
+	std::vector<glm::vec2>::iterator v;
+	std::vector<glm::vec2>::iterator v1;
+	
+	for(v = vertices.begin(), v1 = vertices.begin() + 1; v != vertices.end() - 1; v++, v1++) {
+		if (v->y <= point.y) {
+			if (v1->y  > point.y) {  
+				if (isLeft( *v, *v1, point) > 0) {
+				//	std::cout << "+1" << std::endl;
+					++wn;     
+				}
+			}
+		}
+		else {                        
+			if (v1->y  <= point.y) {
+				if (isLeft( *v, *v1, point) < 0) { 
+				//	std::cout << "-1" << std::endl;
+					--wn;                  
+				}
+			}
+		}
+	}
+	std::cout << "wn: " << wn << std::endl;
+	return wn;
+}
+
+bool RayTracer::polygonContainsPoint(	glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, 
+										glm::vec3 normal, glm::vec3 point) {
+	glm::vec2 projectedV1, projectedV2, projectedV3, projectedPoint;
+	glm::vec3 absNormal = glm::vec3(std::abs(normal.x), std::abs(normal.y), std::abs(normal.z));
+	float axisToIgnore = std::max(std::max(absNormal.x, absNormal.y), absNormal.z);
+	// 2D Projection
+	if(axisToIgnore == absNormal.x) {
+		//std::cout << "axis x, plane yz " << std::endl;
+		projectedV1 = glm::vec2(v1.y, v1.z);
+		projectedV2 = glm::vec2(v2.y, v2.z);
+		projectedV3 = glm::vec2(v3.y, v3.z);
+		projectedPoint = glm::vec2(point.y, point.z);
+	}
+	else if(axisToIgnore == absNormal.y) {
+		//std::cout << "axis y, plane xz " << std::endl;
+		projectedV1 = glm::vec2(v1.x, v1.z);
+		projectedV2 = glm::vec2(v2.x, v2.z);
+		projectedV3 = glm::vec2(v3.x, v3.z);
+		projectedPoint = glm::vec2(point.x, point.z);
+	}
+	else {
+		//std::cout << "axis z, plane xy " << std::endl;
+		projectedV1 = glm::vec2(v1.x, v1.y);
+		projectedV2 = glm::vec2(v2.x, v2.y);
+		projectedV3 = glm::vec2(v3.x, v3.y);
+		projectedPoint = glm::vec2(point.x, point.y);
+	}
+
+	// Winding Number Test
+	std::vector<glm::vec2> vertices;
+	vertices.push_back(projectedV1);
+	vertices.push_back(projectedV2);
+	vertices.push_back(projectedV3);
+	vertices.push_back(projectedV1);
+	int wn = windingNumber(vertices, projectedPoint);		
+	if (wn != 0)
+		return true;
+	else
+		return false;
+}
 
 bool RayTracer::intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3){
 
 	glm::vec3 N = glm::cross((v2 - v1), (v3 - v1));
 
+	// calcular o ponto de intersecao com o plano do poligono
 	float NdotD = glm::dot(N, ray.direction);
 	if(NdotD == 0){
 		return false;
@@ -250,17 +327,16 @@ bool RayTracer::intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * norm
 	float t = - (NdotO/ NdotD);
 	if(t < 0){
 		return false;
-	}
-
-	// calcular o ponto de intersecao
+	}	
 	*Pi = ray.origin + ray.direction*t;
 
-	// TO DO testar se ponto pertence ao poligono
-
-	*Ti = t;
-	*normal = glm::normalize(N);
-	return true;
-
+	// ver se o ponto de intersecao com o plano esta dentro do poligono
+	if (polygonContainsPoint(v1, v2,v3, N, *Pi)) {
+		*Ti = t;
+		*normal = glm::normalize(N);
+		return true;
+	}
+	return false;
 }
 
 
@@ -424,10 +500,20 @@ Ray RayTracer::computeReflectionRay(glm::vec3 Pi, glm::vec3 r){
 	return ray;
 }
 
-Ray RayTracer::computeRefractionRay(Ray ray){
-	return ray; // TO DO
-}
+Ray RayTracer::computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float niu2){
+	Ray ray;
+	float sinTetaI, sinTetaT, cosTetaT;
+	float niu1 = 1.0f; // indice refraccao Ar
+	glm::vec3 t = glm::normalize(Vt); 
+	glm::vec3 rt;
 
-void RayTracer::castShadowFeeler(NFF * nff, Ray ray, glm::vec3 Pi) {
+	sinTetaI = glm::length2(Vt);
+	sinTetaT = (niu2/niu1) * sinTetaI;
+	cosTetaT = glm::sqrt(std::abs(1 - sinTetaT*sinTetaT));
+	rt = sinTetaT * t + cosTetaT*(-N);
 
+	ray.origin = Pi + (0.001f * rt);
+	ray.direction = rt;
+
+	return ray;
 }
