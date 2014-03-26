@@ -62,14 +62,14 @@ namespace ConfigLoader {
                     else if(splitedLine[0] == "resolution" && flagBeforeObjects) {
 						scene1->camera.res = std::vector<int>(2);
 						scene1->camera.res[0] = atoi(splitedLine[1].c_str());
-						scene1->camera.res[1] = atoi(splitedLine[1].c_str());
+						scene1->camera.res[1] = atoi(splitedLine[2].c_str());
 					}
                     
                     // Background Color
                     else if(splitedLine[0] == "b" && flagBeforeObjects) {
 						scene1->background.r = atof(splitedLine[1].c_str());
-						scene1->background.b = atof(splitedLine[2].c_str());
-						scene1->background.g = atof(splitedLine[3].c_str());
+						scene1->background.g = atof(splitedLine[2].c_str());
+						scene1->background.b = atof(splitedLine[3].c_str());
 					}
                     
                     // Positional Light

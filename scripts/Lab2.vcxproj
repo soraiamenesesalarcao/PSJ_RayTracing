@@ -80,7 +80,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Camera.cpp" />
-    <ClCompile Include="..\src\Color.cpp" />
     <ClCompile Include="..\src\ConfigLoader.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\RayTracer.cpp" />
@@ -88,14 +87,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Camera.h" />
-    <ClInclude Include="..\src\Color.h" />
     <ClInclude Include="..\src\ConfigLoader.h" />
     <ClInclude Include="..\src\Definitions.h" />
     <ClInclude Include="..\src\RayTracer.h" />
     <ClInclude Include="..\src\Scene.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="resources\balls_high.nff" />
+    <None Include="resources\balls_low.nff" />
+    <None Include="resources\balls_medium.nff" />
     <None Include="resources\jap.nff" />
+    <None Include="resources\jap_alterado.nff" />
+    <None Include="resources\jap_original.nff" />
+    <None Include="resources\mount_high.nff" />
+    <None Include="resources\mount_low.nff" />
+    <None Include="resources\mount_very_high.nff" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

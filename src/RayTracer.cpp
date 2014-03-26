@@ -157,8 +157,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	if(hasIntersectedGlobal) {
 		 float diffuseR = 0, diffuseG = 0, diffuseB = 0;
 		 float specularR = 0, specularG = 0, specularB = 0;
-		 float reflectionR = 0, reflectionG = 0, reflectionB = 0;
-		 glm::vec3 V, L, H, R, N;
+		 glm::vec3 V, L, R, N;
 		 glm::vec3 auxDir = glm::vec3(ray.direction.x * 0.001, ray.direction.y * 0.001, ray.direction.z * 0.001); 
 		 V = glm::normalize(Camera::getInstance()->computeV());
 		 N = glm::normalize(closestNormal);
@@ -170,10 +169,10 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
 			L = glm::normalize(lightPoint - closestPi);
 			
-			//inicializacao do shadow feeleer
-			Ray shadowFeeleer;
-			shadowFeeleer.origin = closestPi - auxDir;
-			shadowFeeleer.direction = L;
+			//inicializacao do shadow feeler
+			Ray shadowFeeler;
+			shadowFeeler.origin = closestPi - auxDir;
+			shadowFeeler.direction = L;
 			
 			//vector reflexao especular
 			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
@@ -181,8 +180,8 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
 			if(LdotN > 0) {
 				
-				// se intersecta com um shadow feeleer
-				if(intersecta(nff, shadowFeeleer)){
+				// se intersecta com um shadow feeler
+				if(intersecta(nff, shadowFeeler)){
 					continue;
 				}
 
@@ -208,7 +207,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 
 		// Compute the secondary rays
 		if(depth < MAX_DEPTH){
-			// Calculo da reflexão
+			// Calculo da reflexao
 			
 			if(material.ks > 0){
 				Ray reflectionRay = computeReflectionRay(closestPi, R);

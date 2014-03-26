@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Color.h"
 #include "Definitions.h"
 #include "Camera.h"
 

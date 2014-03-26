@@ -12,12 +12,12 @@ int RES_X = 500, RES_Y = 500;
 /* ************************************************************************** */
 
 void reshape(int w, int h) { 
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearColor(0.0, 0.0, 0.0, 0.5);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION); 
 	glLoadIdentity();
-	gluOrtho2D(0, RES_X-1, 0, RES_Y -1);
+	gluOrtho2D(0, RES_X-1, 0, RES_Y-1);
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity(); 
 }
@@ -39,10 +39,9 @@ void setupCallbacks()  {
 
 
 void setupOpenGL() {
-	glClearColor(0, 0, 0, 1);
+	glClearColor(0.0, 0.0, 0.0, 0.5);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
-
 }
 
 
@@ -52,7 +51,6 @@ void setupGLUT(int argc, char* argv[]) {
 	glutInitWindowSize(RES_X-1, RES_Y-1);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("JAP Ray Tracing");
-
 }
 
 
