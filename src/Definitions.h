@@ -23,7 +23,7 @@
 #include <ext.hpp>
 
 // MACROS
-#define MAX_DEPTH 3
+#define MAX_DEPTH 6
 
 // Structure for representing a vertex of a polygon
 typedef struct {

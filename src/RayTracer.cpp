@@ -157,10 +157,12 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	if(hasIntersectedGlobal) {
 		 float diffuseR = 0, diffuseG = 0, diffuseB = 0;
 		 float specularR = 0, specularG = 0, specularB = 0;
+		 float reflectionR = 0, reflectionG = 0, reflectionB = 0;
 		 glm::vec3 V, L, H, R, N;
 		 glm::vec3 auxDir = glm::vec3(ray.direction.x * 0.001, ray.direction.y * 0.001, ray.direction.z * 0.001); 
 		 V = glm::normalize(Camera::getInstance()->computeV());
 		 N = glm::normalize(closestNormal);
+
 
 	//	 Compute the illumination
 		glm::vec3 lightPoint;
@@ -168,57 +170,55 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			lightPoint = glm::vec3(l->position.px, l->position.py, l->position.pz);
 			L = glm::normalize(lightPoint - closestPi);
 			
-			//SHADOWS FEELEERS
+			//inicializacao do shadow feeleer
 			Ray shadowFeeleer;
 			shadowFeeleer.origin = closestPi - auxDir;
 			shadowFeeleer.direction = L;
 			
+			//vector reflexao especular
+			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
+
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
 			if(LdotN > 0) {
+				
 				// se intersecta com um shadow feeleer
-				if(!intersecta(nff, shadowFeeleer)){
-					//continue;
-				//}			
-					diffuseR += material.kd * material.color.r * l->color.r * LdotN;
-					diffuseG += material.kd * material.color.g * l->color.g * LdotN;
-					diffuseR += material.kd * material.color.b * l->color.b * LdotN;
-
-					//H = glm::normalize(-V + L);
-					//vector reflexao especular
-					R = glm::normalize(2 * glm::dot(glm::normalize(auxDir), N) * N - L); //ou usa-se o -V
-					//float NdotH = std::max(glm::dot(N, H), 0.0f);  //calculo da especular
-					float RdotL = std::max(glm::dot(R,L), 0.0f);
-					if(RdotL > 0){ 
-						specularR += material.ks * material.color.r * l->color.r * glm::pow(RdotL, material.shine);
-						specularG += material.ks * material.color.g * l->color.g * glm::pow(RdotL, material.shine);
-						specularB += material.ks * material.color.b * l->color.b * glm::pow(RdotL, material.shine);
-					}
-
+				if(intersecta(nff, shadowFeeleer)){
+					continue;
 				}
-			}
-		}
+
+				// Componente difusa
+				diffuseR += material.kd * material.color.r * l->color.r * LdotN;
+				diffuseG += material.kd * material.color.g * l->color.g * LdotN;
+				diffuseR += material.kd * material.color.b * l->color.b * LdotN;
+
+				//componente especular
+				float RdotL = std::max(glm::dot(R,L), 0.0f);
+				if(RdotL > 0){ 
+					specularR += material.ks * material.color.r * l->color.r * glm::pow(RdotL, material.shine);
+					specularG += material.ks * material.color.g * l->color.g * glm::pow(RdotL, material.shine);
+					specularB += material.ks * material.color.b * l->color.b * glm::pow(RdotL, material.shine);
+				}
+			}//end if(LdotN > 0)
+
+		} //end for
 
 		material.color.r = diffuseR + specularR;
 		material.color.g = diffuseG + specularG;
 		material.color.b = diffuseB + specularB;
 
-
-		//Compute the secondary rays
-		
-		//if(depth < MAX_DEPTH) {
-			//glm::vec3 D = glm::vec3(ray.direction);
-			//R = D - 2 * glm::dot(D, N) * N;
-
-			// Reflection
-			/*
-			if(material.ks > 0) { 
+		// Compute the secondary rays
+		if(depth < MAX_DEPTH){
+			// Calculo da reflexão
+			
+			if(material.ks > 0){
 				Ray reflectionRay = computeReflectionRay(closestPi, R);
 				RGB reflectionColor = trace(nff, reflectionRay, depth + 1);
-				material.color.r = std::min((material.color.r + reflectionColor.r * material.ks), 1.0f);
-				material.color.g = std::min((material.color.g + reflectionColor.g * material.ks), 1.0f);
-				material.color.b = std::min((material.color.b + reflectionColor.b * material.ks), 1.0f);
+
+				material.color.r += reflectionColor.r * material.ks;
+				material.color.g += reflectionColor.g * material.ks;
+				material.color.b += reflectionColor.b * material.ks;
 			}
-			/**/
+
 			// Refraction
 			/*if(material.t > 0) {
 				Ray refractionRay = computeRefractionRay(ray);
@@ -227,7 +227,8 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 				material.color.g += (refractionColor.g / material.t);
 				material.color.b += (refractionColor.b / material.t);
 			}*/
-		//} 
+		}
+
 	}
 
 	return material.color;

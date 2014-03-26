@@ -36,7 +36,7 @@ Color Scene::rayTracing(Ray ray, float depth, float IoRefraction) {
 
 void Scene::init() {
 	_nff = new NFF();
-	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _nff);
+	ConfigLoader::loadSceneNFF("resources/balls_medium.nff", _nff);
 	Camera::getInstance()->init(&(_nff->camera));
 	
 }
