@@ -237,20 +237,30 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 
 
 bool RayTracer::intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3){
-	glm::vec3 N = glm::cross((v3 - v2), (v1 - v2));
-	glm::vec3 Q = v1;
 
-	float t = (glm::dot(N, (Q - ray.origin)))/(glm::dot(ray.origin, ray.direction));
+	glm::vec3 N = glm::cross((v2 - v1), (v3 - v1));
 
-	if (t < 0)
-		return false;	
-	else {
-		*Pi = ray.origin + ray.direction*t;
-		*Ti = t;
-		*normal = glm::normalize(N);
-		return true;
+	float NdotD = glm::dot(N, ray.direction);
+	if(NdotD == 0){
+		return false;
 	}
-	return false;
+
+	glm::vec3 sub = ray.origin - v1;
+	float NdotO = glm::dot(N, sub);
+	float t = - (NdotO/ NdotD);
+	if(t < 0){
+		return false;
+	}
+
+	// calcular o ponto de intersecao
+	*Pi = ray.origin + ray.direction*t;
+
+	// TO DO testar se ponto pertence ao poligono
+
+	*Ti = t;
+	*normal = glm::normalize(N);
+	return true;
+
 }
 
 
