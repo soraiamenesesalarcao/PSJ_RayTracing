@@ -160,9 +160,9 @@ namespace ConfigLoader {
                         continue;
                     }
                     else if(vert_polygon > 0){
-						v.vx = atof(splitedLine[1].c_str());
-						v.vy = atof(splitedLine[2].c_str());
-						v.vz = atof(splitedLine[3].c_str());
+						v.vx = atof(splitedLine[0].c_str());
+						v.vy = atof(splitedLine[1].c_str());
+						v.vz = atof(splitedLine[2].c_str());
 						polygon.vertices.push_back(v);
 
 						vert_polygon--;
@@ -179,14 +179,14 @@ namespace ConfigLoader {
                         continue;
                     }
                     else if(vert_polygon_patch > 0){
-						v.vx = atof(splitedLine[1].c_str());
-						v.vy = atof(splitedLine[2].c_str());
-						v.vz = atof(splitedLine[3].c_str());
+						v.vx = atof(splitedLine[0].c_str());
+						v.vy = atof(splitedLine[1].c_str());
+						v.vz = atof(splitedLine[2].c_str());
 						polyPatch.vertices.push_back(v);
 
-						norm.nx = atof(splitedLine[4].c_str());
-						norm.ny = atof(splitedLine[5].c_str());
-						norm.nz = atof(splitedLine[6].c_str());
+						norm.nx = atof(splitedLine[3].c_str());
+						norm.ny = atof(splitedLine[4].c_str());
+						norm.nz = atof(splitedLine[5].c_str());
 						polyPatch.normals.push_back(norm);
 						
 						vert_polygon_patch--;
