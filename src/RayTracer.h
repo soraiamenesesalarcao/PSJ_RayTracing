@@ -22,6 +22,7 @@ class RayTracer {
 		bool intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, ConeCylinder coneCylinder, Ray ray);
 		
 		Ray computeReflectionRay(glm::vec3 Pi, glm::vec3 r); 
-		Ray computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float niu2); 
-		RGB trace(NFF * nff, Ray ray, int depth);
+		Ray computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float niu1, float niu2);
+
+		RGB trace(NFF * nff, Ray ray, int depth, float ior);
 };

@@ -19,7 +19,6 @@ bool RayTracer::intersecta(NFF *nff, Ray ray){
 	glm::vec3 Pi;
 	glm::vec3 normal;
 	float Ti;
-	bool shadow = false;
 
 	for(std::vector<Plan>::iterator pl = nff->planes.begin(); pl != nff->planes.end(); pl++) {
 		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *pl, ray);
@@ -35,10 +34,17 @@ bool RayTracer::intersecta(NFF *nff, Ray ray){
 		}
 	}
 
+	for(std::vector<Polygon>::iterator p = nff->polygons.begin(); p != nff->polygons.end(); p++){
+		hasIntersectedLocal = intersect(&Pi, &Ti, &normal, *p, ray);
+		if(hasIntersectedLocal) {
+			return true;
+		}
+	}
+
 	return false;
 }
 
-RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
+RGB RayTracer::trace(NFF * nff, Ray ray, int depth, float ior){
 	bool hasIntersectedGlobal = false;
 	bool hasIntersectedLocal = false;
 	glm::vec3 Pi;
@@ -47,6 +53,9 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	glm::vec3 closestNormal;
 	float Ti;
 	float closestTi = FLT_MAX;
+	bool IsInside = false;
+
+	glm::vec2 lightAttenuation(0.06f, 0.06f);
 
 	// Default material
 	Material material;
@@ -55,7 +64,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	material.kd = 0.0;
 	material.ks = 0.0;
 	material.shine = 0.0;
-	material.t = 0.0;	
+	material.t = 0.0;
 
 	// Check if there is an intersection
 	for(std::vector<Plan>::iterator pl = nff->planes.begin(); pl != nff->planes.end(); pl++) {
@@ -77,12 +86,8 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 		}
 
 	}
-	//std::cout << "Total: " << nff->polygons.size() << std::endl;
-	for(std::vector<Polygon>::iterator p = nff->polygons.begin(); p != nff->polygons.end(); p++) {
-		/*std::cout << "Polygon v1: [" << p->vertices[0].vx << " " << p->vertices[0].vy << " " << p->vertices[0].vz << " ]" << std::endl;
-		std::cout << "Polygon v2: [" << p->vertices[1].vx << " " << p->vertices[1].vy << " " << p->vertices[1].vz << " ]" << std::endl;
-		std::cout << "Polygon v3: [" << p->vertices[2].vx << " " << p->vertices[2].vy << " " << p->vertices[2].vz << " ]" << std::endl;*/
 
+	for(std::vector<Polygon>::iterator p = nff->polygons.begin(); p != nff->polygons.end(); p++) {
 		hasIntersectedLocal = intersect(&Pi,  &Ti, &normal, *p, ray);
 		if(hasIntersectedLocal) {
 			if(!hasIntersectedGlobal) {
@@ -164,7 +169,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 	if(hasIntersectedGlobal) {
 		 float diffuseR = 0, diffuseG = 0, diffuseB = 0;
 		 float specularR = 0, specularG = 0, specularB = 0;
-		 float niu2;
+		 float niu1, niu2;
 		 glm::vec3 V, L, R, N, Vt;
 		 glm::vec3 auxDir = glm::vec3(ray.direction.x * 0.001, ray.direction.y * 0.001, ray.direction.z * 0.001); 
 		 V = glm::normalize(Camera::getInstance()->computeV());
@@ -185,13 +190,14 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
 
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
-
+			float attenuation;
 			if(LdotN > 0) {		
-				// se intersecta com um shadow feeler
+				// se intersecta com um shadow feelerb
 				if(intersecta(nff, shadowFeeler)){
 					continue;
 				}
-
+				glm::vec3 lightPosition(l->position.px, l->position.py, l->position.pz);
+				attenuation = 1.0f / (1.0f + lightAttenuation.x * glm::length(closestPi - lightPosition) + lightAttenuation.y * pow(glm::length(closestPi - lightPosition), 2.0f));
 				// Componente difusa
 				diffuseR += material.kd * material.color.r * l->color.r * LdotN;
 				diffuseG += material.kd * material.color.g * l->color.g * LdotN;
@@ -200,14 +206,13 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 				//componente especular
 				float RdotL = std::max(glm::dot(R,L), 0.0f);
 				if(RdotL > 0){ 
-					specularR += material.ks * material.color.r * l->color.r * glm::pow(RdotL, material.shine);
-					specularG += material.ks * material.color.g * l->color.g * glm::pow(RdotL, material.shine);
-					specularB += material.ks * material.color.b * l->color.b * glm::pow(RdotL, material.shine);
+					specularR += material.ks * material.color.r * l->color.r * glm::pow(RdotL, material.shine) * attenuation;
+					specularG += material.ks * material.color.g * l->color.g * glm::pow(RdotL, material.shine) * attenuation;
+					specularB += material.ks * material.color.b * l->color.b * glm::pow(RdotL, material.shine) * attenuation;
 				}
 			}//end if(LdotN > 0)
 
 		} //end for
-
 
 		material.color.r = diffuseR + specularR;
 		material.color.g = diffuseG + specularG;
@@ -218,8 +223,9 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			// Calculo da reflexao
 			
 			if(material.ks > 0){
+				niu2 = material.indexRefraction;
 				Ray reflectionRay = computeReflectionRay(closestPi, R);
-				RGB reflectionColor = trace(nff, reflectionRay, depth + 1);
+				RGB reflectionColor = trace(nff, reflectionRay, depth + 1, ior);
 
 				material.color.r += reflectionColor.r * material.ks;
 				material.color.g += reflectionColor.g * material.ks;
@@ -229,15 +235,23 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth){
 			// Refraction
 			if(material.t > 0) {
 				Vt = glm::dot(V, N) * N - V;
-				niu2 = material.indexRefraction;
-				Ray refractionRay = computeRefractionRay(closestPi, Vt, N, niu2);
-				RGB refractionColor = trace(nff, refractionRay, depth + 1);
-				/*material.color.r += (refractionColor.r * (1-material.t));
-				material.color.g += (refractionColor.g * (1-material.t));
-				material.color.b += (refractionColor.b * (1-material.t));*/
-				material.color.r += (refractionColor.r * material.t);
-				material.color.g += (refractionColor.g * material.t);
-				material.color.b += (refractionColor.b * material.t);
+				float result;
+				if(glm::dot(V, N) < 0){
+					niu1 = material.indexRefraction;
+					niu2 = ior;
+					result = 1.0;
+				} else {
+					niu2 = material.indexRefraction;
+					niu1 = ior;
+					result = material.indexRefraction;
+				}
+				
+				Ray refractionRay = computeRefractionRay(closestPi, Vt, N, niu1, niu2);
+				RGB refractionColor = trace(nff, refractionRay, depth + 1, result);
+				material.color.r += refractionColor.r * material.t;
+				material.color.g += refractionColor.g * material.t;
+				material.color.b += refractionColor.b * material.t;
+
 			}
 		}
 	}
@@ -414,6 +428,7 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Sphere
 	glm::vec3 D = glm::normalize(glm::vec3(ray.direction[0], ray.direction[1], ray.direction[2]));
 	glm::vec3 O = glm::vec3(ray.origin[0], ray.origin[1], ray.origin[2]);
 	glm::vec3 C = glm::vec3(sphere.center.px, sphere.center.py, sphere.center.pz);
+	//IsInside = false;
 
 	//passo 2
 	float dQuad = glm::pow2(C.x - O.x) + glm::pow2(C.y - O.y) + glm::pow2(C.z - O.z);
@@ -461,7 +476,6 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Sphere
 
 	return true;
 }
-
 
 bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, ConeCylinder coneCylinder, Ray ray){
 	float A, B, C;
@@ -511,21 +525,27 @@ Ray RayTracer::computeReflectionRay(glm::vec3 Pi, glm::vec3 r){
 	return ray;
 }
 
-Ray RayTracer::computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float niu2){
+Ray RayTracer::computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float niu1, float niu2){
 	Ray ray;
-	float sinTetaI, sinTetaT, cosTetaT;
-	float niu1 = 1.0f; // indice refraccao Ar // FALTA refracao de saida!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-						// sugestao: passar IoR do material inicial como argumento do trace
+	float sinThetaI, sinThetaT, cosThetaT;
+
+	//glm::vec3 Vt = glm::dot(V, N) * N - V;
+
 	glm::vec3 t = glm::normalize(Vt); 
 	glm::vec3 rt;
 
-	sinTetaI = glm::length2(Vt);
-	sinTetaT = (niu2/niu1) * sinTetaI;
-	cosTetaT = glm::sqrt(std::abs(1 - sinTetaT*sinTetaT));	// nunca devia ficar negativo, diz o pardal
-															//- no entanto, eu acho que tem logica dar negativo as vezes - ver linha acima
-	rt = sinTetaT * t + cosTetaT*(-N);
+	sinThetaI = glm::length(Vt);
+	sinThetaT = (niu1/niu2) * sinThetaI;
+	float sinQuad = sinThetaT*sinThetaT;
+
+	cosThetaT = 0.0f;
+	if(sinQuad < 1){
+		cosThetaT = glm::sqrt(1.0f - sinQuad);
+	}
+	
+	rt = sinThetaT * t + cosThetaT*(-N);
 
 	ray.origin = Pi + (0.001f * rt);
-	ray.direction = rt;
+	ray.direction = glm::normalize(rt);
 	return ray;
 }
