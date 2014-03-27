@@ -111,7 +111,6 @@ namespace ConfigLoader {
                     
                     // Cylinder or Cone
                     else if(splitedLine[0] == "c"){
-                     //   std::cout << "Cylinder or Cone" << std::endl;
                         cylinderOrCone = 1;
                         continue;
                     }
@@ -159,7 +158,6 @@ namespace ConfigLoader {
 
                     // Polygon
                     else if(splitedLine[0] == "p"){
-                     //   std::cout << "Polygon" << std::endl;
                         vert_polygon = atof(splitedLine[1].c_str());
 						polygon.vertices.clear();
                         continue;
@@ -180,7 +178,6 @@ namespace ConfigLoader {
                         
                     // Polygonal Patch
                     else if(splitedLine[0] == "pp"){
-                    //    std::cout << "Polygon Patch" << std::endl;
                         vert_polygon_patch = atof(splitedLine[1].c_str());
 						polyPatch.vertices.clear();
                         continue;

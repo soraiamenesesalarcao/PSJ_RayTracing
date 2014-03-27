@@ -3,7 +3,7 @@
 
 
 Camera::Camera() {	
-	_winWidth = 640; //indicar valores por default....
+	_winWidth = 640; 
 	_winHeight = 480;
 }
 
@@ -24,8 +24,7 @@ void Camera::init(Viewpoint * viewpoint){
 	fovy = glm::radians(viewpoint->angle); 
 	near = viewpoint->hither; //hither	
 
-	//df = glm::sqrt(glm::length2(eye - at)); //distance
-	df = glm::length(eye - at); //distance - isto só estava a fazer: x^2 + y^2 + z^2 --- faltava fazer a raiz!!!
+	df = glm::length(eye - at); //distance
 	h = 2 * df * glm::tan(fovy / 2.0);
 	w = h * (_winWidth / _winHeight);	
 
@@ -83,12 +82,7 @@ void Camera::put() {
     glLoadIdentity();
 	
 	glViewport(0, 0, _winWidth, _winHeight);
-	//gluPerspective(80.0f, ((float) _winWidth) / (float) _winHeight, 1, 5000 );	
 	gluPerspective(fovy, ((float) _winWidth) / (float) _winHeight, 0.01, 100 );	
-	//gluLookAt(	0.0, -1.0, 0.0, 	// eye
-	//			0.0, 0.0, 0.0, 		// center
-	//			0.0, 0.0, 1.0);		// up
-
 	gluLookAt(	eye.x, eye.y, eye.z, 	// eye
 				at.x, at.y, at.z, 		// center
 				up.x, up.y, up.z);		// up

@@ -10,7 +10,7 @@ RayTracer * RayTracer::getInstance(){
 
 
 /*
- * Verificacao de interseccoes para os raios shadows!!! 
+ * Verificacao de interseccoes para os shadow feelers
  */
 bool RayTracer::intersecta(NFF *nff, Ray ray){
 	bool hasIntersectedGlobal = false;
@@ -223,7 +223,6 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth, float ior){
 			// Calculo da reflexao
 			
 			if(material.ks > 0){
-//				niu2 = material.indexRefraction;
 				Ray reflectionRay = computeReflectionRay(closestPi, R);
 				RGB reflectionColor = trace(nff, reflectionRay, depth + 1, ior);
 
@@ -234,20 +233,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth, float ior){
 		
 			// Refraction
 			if(material.t != 0) {
-				//Vt = glm::dot(V, N) * N - V;
 				Vt = glm::dot(-ray.direction, N) * N + ray.direction;
-				//float result;
-				//if(ior != 1.0f){
-				//	//niu1 = 1.0f;
-				//	niu1 = ior;
-				//	niu2 = material.indexRefraction;
-
-				//} else {
-				//	niu1 = material.indexRefraction;
-				//	//niu2 = 1.0f;	
-				//	niu2 = ior;
-				//}
-				//result = niu1;
 				float newIOR;
 				Ray refractionRay = computeRefractionRay(closestPi, Vt, N, ior, material.indexRefraction, &newIOR);
 				if(refractionRay.origin.x != NULL) {
@@ -266,7 +252,6 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth, float ior){
 
 float RayTracer::isLeft(glm::vec2 P0, glm::vec2 P1, glm::vec2 P2)
 {
-	//std::cout << ((P1.x - P0.x) * (P2.y - P0.y) - (P2.x -  P0.x) * (P1.y - P0.y)) << std::endl;
     return ((P1.x - P0.x) * (P2.y - P0.y) - (P2.x -  P0.x) * (P1.y - P0.y));
 }
 
@@ -279,7 +264,6 @@ int RayTracer::windingNumber(std::vector<glm::vec2> vertices, glm::vec2 point) {
 		if (v->y <= point.y) {
 			if (v1->y  > point.y) {  
 				if (isLeft( *v, *v1, point) > 0) {
-				//	std::cout << "+1" << std::endl;
 					++wn;     
 				}
 			}
@@ -287,13 +271,11 @@ int RayTracer::windingNumber(std::vector<glm::vec2> vertices, glm::vec2 point) {
 		else {                        
 			if (v1->y  <= point.y) {
 				if (isLeft( *v, *v1, point) < 0) { 
-				//	std::cout << "-1" << std::endl;
 					--wn;                  
 				}
 			}
 		}
 	}
-	//std::cout << "wn: " << wn << std::endl;
 	return wn;
 }
 
@@ -304,21 +286,18 @@ bool RayTracer::polygonContainsPoint(	glm::vec3 v1, glm::vec3 v2, glm::vec3 v3,
 	float axisToIgnore = std::max(std::max(absNormal.x, absNormal.y), absNormal.z);
 	// 2D Projection
 	if(axisToIgnore == absNormal.x) {
-		//std::cout << "axis x, plane yz " << std::endl;
 		projectedV1 = glm::vec2(v1.y, v1.z);
 		projectedV2 = glm::vec2(v2.y, v2.z);
 		projectedV3 = glm::vec2(v3.y, v3.z);
 		projectedPoint = glm::vec2(point.y, point.z);
 	}
 	else if(axisToIgnore == absNormal.y) {
-		//std::cout << "axis y, plane xz " << std::endl;
 		projectedV1 = glm::vec2(v1.x, v1.z);
 		projectedV2 = glm::vec2(v2.x, v2.z);
 		projectedV3 = glm::vec2(v3.x, v3.z);
 		projectedPoint = glm::vec2(point.x, point.z);
 	}
 	else {
-		//std::cout << "axis z, plane xy " << std::endl;
 		projectedV1 = glm::vec2(v1.x, v1.y);
 		projectedV2 = glm::vec2(v2.x, v2.y);
 		projectedV3 = glm::vec2(v3.x, v3.y);
@@ -356,10 +335,6 @@ bool RayTracer::intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * norm
 	}	
 	*Pi = ray.origin + ray.direction*t;
 
-	/**Ti = t;
-	*normal = glm::normalize(N);
-	return true;
-	*/
 	// ver se o ponto de intersecao com o plano esta dentro do poligono
 	if (polygonContainsPoint(v1, v2,v3, N, *Pi)) {
 		*Ti = t;
@@ -395,9 +370,6 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Plan p
 		return false;
 	}
 
-	//if(NdotD < 0){
-		//N = -N;
-	//}
 
 	// calcular o ponto de intersecao
 	*Pi = ray.origin + ray.direction*t;
@@ -533,22 +505,17 @@ Ray RayTracer::computeReflectionRay(glm::vec3 Pi, glm::vec3 r){
 Ray RayTracer::computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float ior, float iorObject, float * newIOR){
 	Ray ray;
 	float sinThetaI, sinThetaT, cosThetaT;
-//	float newIOR;
 
 	if(ior != 1.0f) 
 		*newIOR = 1.0f;
 	else *newIOR = iorObject;
 
-	//glm::vec3 Vt = glm::dot(V, N) * N - V;
-
 	glm::vec3 t = glm::normalize(Vt); 
 	glm::vec3 rt;
 
-	//sinThetaI = glm::length(Vt);
-	//sinThetaI = glm::sqrt(glm::length(Vt));
 	sinThetaI = glm::sqrt(glm::pow2(Vt.x) + glm::pow2(Vt.y) + glm::pow2(Vt.z));
 	sinThetaT = (ior/(*newIOR)) * sinThetaI;
-	//sinThetaT = (niu2/niu1) * sinThetaI;
+
 	float sinQuad = sinThetaT*sinThetaT;
 
 	cosThetaT = 0.0f;
