@@ -11,7 +11,7 @@ Scene * Scene::getInstance(){
 
 void Scene::init() {
 	_nff = new NFF();
-	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _nff);
+	ConfigLoader::loadSceneNFF("resources/mount_low.nff", _nff);
 	Camera::getInstance()->init(&(_nff->camera));
 	
 }
@@ -29,9 +29,9 @@ void Scene::draw() {
 			glBegin(GL_POINTS);		
 			glColor3f(color.r, color.g, color.b);
 			glVertex2f(x, y);
-			glEnd();
-			glFlush(); 
+			glEnd();			
 		}
+		glFlush(); 
 	}
 	printf("Terminou!\n"); 
 }
