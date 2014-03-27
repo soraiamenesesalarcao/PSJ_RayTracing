@@ -192,7 +192,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth, float ior){
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
 			float attenuation;
 			if(LdotN > 0) {		
-				// se intersecta com um shadow feelerb
+				// se intersecta com um shadow feeler
 				if(intersecta(nff, shadowFeeler)){
 					continue;
 				}
@@ -412,7 +412,7 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Sphere
 
 	//passo 3
 	float radiusQuad = glm::pow2(sphere.radius);
-	if(dQuad == radiusQuad){
+	if(dQuad == radiusQuad){ // encontra-se sobre a superficie da esfera
 		return false;
 	}
 
@@ -420,7 +420,7 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Sphere
 	float B = D.x * (C.x - O.x) + D.y * (C.y - O.y) + D.z * (C.z - O.z);
 	
 	//passo 5
-	if(dQuad > radiusQuad){
+	if(dQuad > radiusQuad){ // raio aponta para o sentido contrario a localizacao da esfera relativamente a origem do raio
 		if( B < 0)
 			return false;
 	}
@@ -447,7 +447,7 @@ bool RayTracer::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Sphere
 	glm::vec3 pi = *Pi;
 	*normal = glm::normalize((pi - C)/sphere.radius);
 
-	if(dQuad < radiusQuad){
+	if(dQuad < radiusQuad){ // encontra-se dentro da esfera
 		*normal = *normal * -1.0f;
 	}
 
