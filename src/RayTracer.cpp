@@ -223,7 +223,7 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth, float ior){
 			// Calculo da reflexao
 			
 			if(material.ks > 0){
-				niu2 = material.indexRefraction;
+//				niu2 = material.indexRefraction;
 				Ray reflectionRay = computeReflectionRay(closestPi, R);
 				RGB reflectionColor = trace(nff, reflectionRay, depth + 1, ior);
 
@@ -231,26 +231,31 @@ RGB RayTracer::trace(NFF * nff, Ray ray, int depth, float ior){
 				material.color.g += reflectionColor.g * material.ks;
 				material.color.b += reflectionColor.b * material.ks;
 			}
-
+		
 			// Refraction
-			if(material.t > 0) {
-				Vt = glm::dot(V, N) * N - V;
-				float result;
-				if(glm::dot(V, N) < 0){
-					niu1 = material.indexRefraction;
-					niu2 = ior;
-					result = 1.0;
-				} else {
-					niu2 = material.indexRefraction;
-					niu1 = ior;
-					result = material.indexRefraction;
+			if(material.t != 0) {
+				//Vt = glm::dot(V, N) * N - V;
+				Vt = glm::dot(-ray.direction, N) * N + ray.direction;
+				//float result;
+				//if(ior != 1.0f){
+				//	//niu1 = 1.0f;
+				//	niu1 = ior;
+				//	niu2 = material.indexRefraction;
+
+				//} else {
+				//	niu1 = material.indexRefraction;
+				//	//niu2 = 1.0f;	
+				//	niu2 = ior;
+				//}
+				//result = niu1;
+				float newIOR;
+				Ray refractionRay = computeRefractionRay(closestPi, Vt, N, ior, material.indexRefraction, &newIOR);
+				if(refractionRay.origin.x != NULL) {
+					RGB refractionColor = trace(nff, refractionRay, depth + 1, newIOR);
+					material.color.r += refractionColor.r * material.t;
+					material.color.g += refractionColor.g * material.t;
+					material.color.b += refractionColor.b * material.t;
 				}
-				
-				Ray refractionRay = computeRefractionRay(closestPi, Vt, N, niu1, niu2);
-				RGB refractionColor = trace(nff, refractionRay, depth + 1, result);
-				material.color.r += refractionColor.r * material.t;
-				material.color.g += refractionColor.g * material.t;
-				material.color.b += refractionColor.b * material.t;
 
 			}
 		}
@@ -525,27 +530,37 @@ Ray RayTracer::computeReflectionRay(glm::vec3 Pi, glm::vec3 r){
 	return ray;
 }
 
-Ray RayTracer::computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float niu1, float niu2){
+Ray RayTracer::computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float ior, float iorObject, float * newIOR){
 	Ray ray;
 	float sinThetaI, sinThetaT, cosThetaT;
+//	float newIOR;
+
+	if(ior != 1.0f) 
+		*newIOR = 1.0f;
+	else *newIOR = iorObject;
 
 	//glm::vec3 Vt = glm::dot(V, N) * N - V;
 
 	glm::vec3 t = glm::normalize(Vt); 
 	glm::vec3 rt;
 
-	sinThetaI = glm::length(Vt);
-	sinThetaT = (niu1/niu2) * sinThetaI;
+	//sinThetaI = glm::length(Vt);
+	//sinThetaI = glm::sqrt(glm::length(Vt));
+	sinThetaI = glm::sqrt(glm::pow2(Vt.x) + glm::pow2(Vt.y) + glm::pow2(Vt.z));
+	sinThetaT = (ior/(*newIOR)) * sinThetaI;
+	//sinThetaT = (niu2/niu1) * sinThetaI;
 	float sinQuad = sinThetaT*sinThetaT;
 
 	cosThetaT = 0.0f;
-	if(sinQuad < 1){
+	if(sinQuad <= 1){
 		cosThetaT = glm::sqrt(1.0f - sinQuad);
-	}
-	
-	rt = sinThetaT * t + cosThetaT*(-N);
 
-	ray.origin = Pi + (0.001f * rt);
-	ray.direction = glm::normalize(rt);
-	return ray;
+		rt = sinThetaT * t + cosThetaT*(-N);
+
+		ray.origin = Pi + (0.001f * rt);
+		ray.direction = glm::normalize(rt);
+	
+	}	
+	else ray.origin.x = NULL;
+	return  ray;	
 }
