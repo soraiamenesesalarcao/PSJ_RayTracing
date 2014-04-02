@@ -39,6 +39,7 @@ typedef struct {
     float nz;
 } Normal;
 
+//NAO DEVE SER NECESSARIO
 typedef struct {
     float px;
     float py;
@@ -51,15 +52,6 @@ typedef struct {
     float b;
 } RGB;
 
-typedef struct{
-    RGB color;
-    float kd;
-    float ks;
-    float shine;
-    float t;
-    float indexRefraction;
-} Material;
-
 // Structure for the info of the camera
 typedef struct {
 	Position from;
@@ -70,12 +62,6 @@ typedef struct {
     std::vector<int> res;
 } Viewpoint;
 
-// Structure for the info of each light
-typedef struct {
-	Position position;
-    RGB color;
-} Light;
-
 // Structure for the info of each cone or cylinder
 typedef struct {
 	Position base_position;
@@ -83,49 +69,22 @@ typedef struct {
 	Position apex_position;
 	float apex_radius;
 
-	Material mtl;
+	//Material mtl;
 } ConeCylinder;
 
-// Structure for the info of each plan
-typedef struct{
-	Position point_1;
-    Position point_2;
-    Position point_3;
-    Material mtl;
-} Plan;
-
-// Structure for the info of each sphere
-typedef struct {
-	Position center;
-    float radius;
-    Material mtl;
-} Sphere;
-
-// Structure for the info of each polygon
-typedef struct {
-    int num_vertices;
-    std::vector<Vertex> vertices;
-    Material mtl;
-} Polygon;
 
 // Structure for the info of each polygon patch
 typedef struct {
     int num_vertices;
     std::vector<Vertex> vertices;
     std::vector<Normal> normals;
-    Material mtl;
+    //Material mtl;
 } PolygonPatch;
 
 // Structure for the info of the nff file
 typedef struct {
-    RGB background;
-    Viewpoint camera;
     std::vector<ConeCylinder> coneAndCylinders;
-    std::vector<Light> lights;
-    std::vector<Plan> planes;
-    std::vector<Polygon> polygons;
     std::vector<PolygonPatch> polygonPatchs;
-    std::vector<Sphere> spheres;
 } NFF;
 
 typedef struct {

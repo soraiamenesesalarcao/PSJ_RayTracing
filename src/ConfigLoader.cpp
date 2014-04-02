@@ -11,7 +11,7 @@ namespace ConfigLoader {
 		return result;
 	}
     
-	void loadSceneNFF(const char* fileName, NFF * scene1){
+	void loadSceneNFF(const char* fileName, RGB * background, std::vector<Light> * lstLights, std::vector<Object*> * lstObjects, Viewpoint * camera){
 		std::string line = std::string();
         std::ifstream file (fileName);
         bool flagBeforeObjects = true;
@@ -19,15 +19,18 @@ namespace ConfigLoader {
         int vert_polygon = 0;
         int vert_polygon_patch = 0;
 
-		Light l = Light();
-		Material m = Material();
-		ConeCylinder cc = ConeCylinder();
-		Plan plan = Plan();
-		Polygon polygon = Polygon();
-		PolygonPatch polyPatch = PolygonPatch();
-		Sphere sphere = Sphere();
+		RGB color;
+		Material material;
+
+		//Light l = Light();
+		//ConeCylinder cc = ConeCylinder();
+		//Plan plan = Plan();
+		//Polygon polygon = Polygon();
+		//PolygonPatch polyPatch = PolygonPatch();
+		//Sphere sphere = Sphere();
 		Vertex v = Vertex();
-		Normal norm = Normal();
+		std::vector<Vertex> vertices;
+		//Normal norm = Normal();
         
         if (file.is_open()) {
             while (getline(file, line)) {
@@ -39,81 +42,76 @@ namespace ConfigLoader {
                     
                     // Viewpoint Location
                     else if(splitedLine[0] == "from" && flagBeforeObjects) {
-						scene1->camera.from.px = atof(splitedLine[1].c_str());
-						scene1->camera.from.py = atof(splitedLine[2].c_str());
-						scene1->camera.from.pz = atof(splitedLine[3].c_str());
+						camera->from.px = atof(splitedLine[1].c_str());
+						camera->from.py = atof(splitedLine[2].c_str());
+						camera->from.pz = atof(splitedLine[3].c_str());
                     }
                     else if(splitedLine[0] == "at" && flagBeforeObjects) {
-						scene1->camera.at.px = atof(splitedLine[1].c_str());
-						scene1->camera.at.py = atof(splitedLine[2].c_str());
-						scene1->camera.at.pz = atof(splitedLine[3].c_str());
+						camera->at.px = atof(splitedLine[1].c_str());
+						camera->at.py = atof(splitedLine[2].c_str());
+						camera->at.pz = atof(splitedLine[3].c_str());
 					}
                     else if(splitedLine[0] == "up" && flagBeforeObjects) {
-						scene1->camera.up.px = atof(splitedLine[1].c_str());
-						scene1->camera.up.py = atof(splitedLine[2].c_str());
-						scene1->camera.up.pz = atof(splitedLine[3].c_str());
+						camera->up.px = atof(splitedLine[1].c_str());
+						camera->up.py = atof(splitedLine[2].c_str());
+						camera->up.pz = atof(splitedLine[3].c_str());
 					}
                     else if(splitedLine[0] == "angle" && flagBeforeObjects) {
-						scene1->camera.angle = atof(splitedLine[1].c_str());
+						camera->angle = atof(splitedLine[1].c_str());
                     }
                     else if(splitedLine[0] == "hither" && flagBeforeObjects) {
-						scene1->camera.hither = atof(splitedLine[1].c_str());
+						camera->hither = atof(splitedLine[1].c_str());
                     }
                     else if(splitedLine[0] == "resolution" && flagBeforeObjects) {
-						scene1->camera.res = std::vector<int>(2);
-						scene1->camera.res[0] = atoi(splitedLine[1].c_str());
-						scene1->camera.res[1] = atoi(splitedLine[2].c_str());
+						camera->res = std::vector<int>(2);
+						camera->res[0] = atoi(splitedLine[1].c_str());
+						camera->res[1] = atoi(splitedLine[2].c_str());
 					}
                     
                     // Background Color
                     else if(splitedLine[0] == "b" && flagBeforeObjects) {
-						scene1->background.r = atof(splitedLine[1].c_str());
-						scene1->background.g = atof(splitedLine[2].c_str());
-						scene1->background.b = atof(splitedLine[3].c_str());
+						background->r = atof(splitedLine[1].c_str());
+						background->g = atof(splitedLine[2].c_str());
+						background->b = atof(splitedLine[3].c_str());
 					}
                     
                     // Positional Light
                     else if(splitedLine[0] == "l" && flagBeforeObjects) {
-
+						glm::vec3 light;
                         if (splitedLine.size() == 3) {
-							l.position.px = atof(splitedLine[1].c_str());
-							l.position.py = atof(splitedLine[2].c_str());
-							l.position.pz = atof(splitedLine[3].c_str());	
+							light = glm::vec3(atof(splitedLine[1].c_str()), atof(splitedLine[2].c_str()), atof(splitedLine[3].c_str()));
 							// default
-							l.color.r = 0.5f;
-							l.color.g = 0.5f;
-							l.color.b = 0.5f;
+							color.r = 0.5f;
+							color.g = 0.5f;
+							color.b = 0.5f;
                         }
                         else {
-							l.position.px = atof(splitedLine[1].c_str());
-							l.position.py = atof(splitedLine[2].c_str());
-							l.position.pz = atof(splitedLine[3].c_str());
-							l.color.r = atof(splitedLine[4].c_str());
-							l.color.g = atof(splitedLine[5].c_str());
-							l.color.b = atof(splitedLine[6].c_str());
+							light = glm::vec3(atof(splitedLine[1].c_str()), atof(splitedLine[2].c_str()), atof(splitedLine[3].c_str()));
+
+							color.r = atof(splitedLine[4].c_str());
+							color.g = atof(splitedLine[5].c_str());
+							color.b = atof(splitedLine[6].c_str());
 						}
-						scene1->lights.push_back(l);
+						lstLights->push_back(Light(light,color));
                     }
                     
                     // Color and Shading Parameters
                     else if(splitedLine[0] == "f") {
 						flagBeforeObjects = false;
 						
-						m.color.r = atof(splitedLine[1].c_str());
-						m.color.g = atof(splitedLine[2].c_str());
-						m.color.b = atof(splitedLine[3].c_str());
-						m.kd = atof(splitedLine[4].c_str());
-						m.ks = atof(splitedLine[5].c_str());
-						m.shine = atof(splitedLine[6].c_str());
-						m.t = atof(splitedLine[7].c_str());
-						m.indexRefraction = atof(splitedLine[8].c_str());	
+						color.r = atof(splitedLine[1].c_str());
+						color.g = atof(splitedLine[2].c_str());
+						color.b = atof(splitedLine[3].c_str());
+						
+						material = Material(color, atof(splitedLine[4].c_str()), atof(splitedLine[5].c_str()), atof(splitedLine[6].c_str()),
+										atof(splitedLine[7].c_str()), atof(splitedLine[8].c_str()));
 					}
                     
                     // Cylinder or Cone
                     else if(splitedLine[0] == "c"){
                         cylinderOrCone = 1;
                         continue;
-                    }
+                    }/*
                     else if(cylinderOrCone == 1){ // first line
 						cc.base_position.px = atof(splitedLine[1].c_str());
 						cc.base_position.py = atof(splitedLine[2].c_str());
@@ -129,60 +127,52 @@ namespace ConfigLoader {
 						cc.mtl = m;
                         cylinderOrCone = 0;
 						scene1->coneAndCylinders.push_back(cc);
-                    }
+                    }*/
                     
                     // Sphere
                     else if(splitedLine[0] == "s"){
-						sphere.center.px = atof(splitedLine[1].c_str());
-						sphere.center.py = atof(splitedLine[2].c_str());
-						sphere.center.pz = atof(splitedLine[3].c_str());
-						sphere.radius = atof(splitedLine[4].c_str());
-						sphere.mtl = m;
-						scene1->spheres.push_back(sphere);
+						glm::vec3 center = glm::vec3(atof(splitedLine[1].c_str()), atof(splitedLine[2].c_str()), atof(splitedLine[3].c_str()));
+						float radius = atof(splitedLine[4].c_str());
+						
+						lstObjects->push_back(new Sphere(center, radius, material));
                     }
                     
                     // Plane
                     else if(splitedLine[0] == "pl"){
-						plan.point_1.px = atof(splitedLine[1].c_str());
-						plan.point_1.py = atof(splitedLine[2].c_str());
-						plan.point_1.pz = atof(splitedLine[3].c_str());
-						plan.point_2.px = atof(splitedLine[4].c_str());
-						plan.point_2.py = atof(splitedLine[5].c_str());
-						plan.point_2.pz = atof(splitedLine[6].c_str());
-						plan.point_3.px = atof(splitedLine[7].c_str());
-						plan.point_3.py = atof(splitedLine[8].c_str());
-						plan.point_3.pz = atof(splitedLine[9].c_str());
-						plan.mtl = m;
-						scene1->planes.push_back(plan);
+						glm::vec3 point1 = glm::vec3(atof(splitedLine[1].c_str()), atof(splitedLine[2].c_str()), atof(splitedLine[3].c_str()));
+						glm::vec3 point2 = glm::vec3(atof(splitedLine[4].c_str()), atof(splitedLine[5].c_str()), atof(splitedLine[6].c_str()));
+						glm::vec3 point3 = glm::vec3(atof(splitedLine[7].c_str()), atof(splitedLine[8].c_str()), atof(splitedLine[9].c_str()));
+
+						lstObjects->push_back(new Plan(point1, point2, point3, material));
                     }
 
                     // Polygon
                     else if(splitedLine[0] == "p"){
                         vert_polygon = atof(splitedLine[1].c_str());
-						polygon.vertices.clear();
+						vertices.clear();
                         continue;
                     }
                     else if(vert_polygon > 0){
-						
 						v.vx = atof(splitedLine[0].c_str());
 						v.vy = atof(splitedLine[1].c_str());
 						v.vz = atof(splitedLine[2].c_str());
-						polygon.vertices.push_back(v);
+						
+						vertices.push_back(v);
+						
 						vert_polygon--;
 						if(vert_polygon == 0) {
-							polygon.mtl = m;
-							scene1->polygons.push_back(polygon);
-							
+							lstObjects->push_back(new Polygon(vertices, material));
+
 						}
                     }
                         
                     // Polygonal Patch
                     else if(splitedLine[0] == "pp"){
                         vert_polygon_patch = atof(splitedLine[1].c_str());
-						polyPatch.vertices.clear();
+						//polyPatch.vertices.clear();
                         continue;
                     }
-                    else if(vert_polygon_patch > 0){
+                    /*else if(vert_polygon_patch > 0){
 						v.vx = atof(splitedLine[0].c_str());
 						v.vy = atof(splitedLine[1].c_str());
 						v.vz = atof(splitedLine[2].c_str());
@@ -198,7 +188,7 @@ namespace ConfigLoader {
 							polyPatch.mtl = m;
 							scene1->polygonPatchs.push_back(polyPatch);
 						}
-                    }
+                    }*/
                 }
             }
         }

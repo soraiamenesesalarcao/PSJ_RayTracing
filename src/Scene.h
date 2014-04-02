@@ -4,18 +4,22 @@
 #include "Definitions.h"
 #include "ConfigLoader.h"
 #include "RayTracer.h"
+#include "Object.h"
+#include "Light.h"
+#include "Plan.h"
 
 class Scene {
 
 	private:
-		Camera * _camera;
-		NFF * _nff;
+		RGB * _background;
+		Viewpoint * _camera;
+		std::vector<Light> _lights;
+		std::vector<Object*> _objects;
 		Scene();
 
 	public:
 		static Scene * getInstance();
 		void init();
 		void draw();
-
 
 };
