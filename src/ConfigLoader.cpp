@@ -21,17 +21,9 @@ namespace ConfigLoader {
 
 		RGB color;
 		Material material;
-
-		//Light l = Light();
-		//ConeCylinder cc = ConeCylinder();
-		//Plan plan = Plan();
-		//Polygon polygon = Polygon();
-		//PolygonPatch polyPatch = PolygonPatch();
-		//Sphere sphere = Sphere();
 		Vertex v = Vertex();
 		std::vector<Vertex> vertices;
-		//Normal norm = Normal();
-        
+
         if (file.is_open()) {
             while (getline(file, line)) {
                 std::vector<std::string> splitedLine = explode(line, ' ');

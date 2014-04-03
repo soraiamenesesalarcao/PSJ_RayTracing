@@ -19,12 +19,12 @@ bool Plan::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray){
 	glm::vec3 C = point_3; //glm::vec3(point_3.x, plan.point_3.y, plan.point_3.z);
 	glm::vec3 N = glm::cross((B - A), (C - A));
 
-	float NdotD = glm::dot(N, ray.direction);
+	float NdotD = glm::dot(N, ray.getDirection());
 	if(NdotD == 0){
 		return false;
 	}
 
-	glm::vec3 sub = ray.origin - A;
+	glm::vec3 sub = ray.getOrigin() - A;
 	float NdotO = glm::dot(N, sub);
 	float t = - (NdotO/ NdotD);
 	if(t < 0){
@@ -32,12 +32,8 @@ bool Plan::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray){
 	}
 
 	// calcular o ponto de intersecao
-	*Pi = ray.origin + ray.direction*t;
+	*Pi = ray.getOrigin() + ray.getDirection()*t;
 	*Ti = t;
 	*normal = glm::normalize(N);
 	return true;
 }
-
-/*bool Plan::intersect(){
-	return true;
-}*/

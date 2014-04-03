@@ -14,8 +14,8 @@ Sphere::Sphere(glm::vec3 center, float radius, Material mtl): Object(mtl){
  */
 bool Sphere::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray){
 	//passo 1
-	glm::vec3 D = glm::normalize(glm::vec3(ray.direction[0], ray.direction[1], ray.direction[2]));
-	glm::vec3 O = glm::vec3(ray.origin[0], ray.origin[1], ray.origin[2]);
+	glm::vec3 D = glm::normalize(glm::vec3(ray.getDirection().x, ray.getDirection().y, ray.getDirection().z));
+	glm::vec3 O = glm::vec3(ray.getOrigin().x, ray.getOrigin().y, ray.getOrigin().z);
 	glm::vec3 C = _center;
 
 	//passo 2

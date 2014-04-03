@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Definitions.h"
+//#include "Definitions.h"
+#include "Ray.h"
 
 
 class Camera {

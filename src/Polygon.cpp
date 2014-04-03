@@ -18,18 +18,18 @@ bool Polygon::intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * normal
 	glm::vec3 N = glm::cross((v2 - v1), (v3 - v1));
 
 	// calcular o ponto de intersecao com o plano do poligono
-	float NdotD = glm::dot(N, ray.direction);
+	float NdotD = glm::dot(N, ray.getDirection());
 	if(NdotD == 0){
 		return false;
 	}
 
-	glm::vec3 sub = ray.origin - v1;
+	glm::vec3 sub = ray.getOrigin() - v1;
 	float NdotO = glm::dot(N, sub);
 	float t = - (NdotO/ NdotD);
 	if(t < 0){
 		return false;
 	}	
-	*Pi = ray.origin + ray.direction*t;
+	*Pi = ray.getOrigin() + ray.getDirection()*t;
 
 	// ver se o ponto de intersecao com o plano esta dentro do poligono
 	if (polygonContainsPoint(v1, v2,v3, N, *Pi)) {

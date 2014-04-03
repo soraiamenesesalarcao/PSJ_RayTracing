@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Object.h"
+#include "Ray.h"
 
 class RayTracer {
 
@@ -11,21 +12,7 @@ class RayTracer {
 		RayTracer();
 		
 	public:
-		static RayTracer * getInstance();
-	
-		//float isLeft(glm::vec2 P0, glm::vec2 P1, glm::vec2 P2);
-		//int windingNumber(std::vector<glm::vec2> vertices, glm::vec2 point);
-		//bool polygonContainsPoint(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 normal, glm::vec3 point);
-		//bool intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);		
-		//bool intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Polygon polygon, Ray ray);
-		//bool intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, PolygonPatch polygonPatch, Ray ray);
-
-		//bool intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, ConeCylinder coneCylinder, Ray ray);
-		
-		Ray computeReflectionRay(glm::vec3 Pi, glm::vec3 r); 
-		Ray computeRefractionRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float ior, float iorObject, float * newIOR);
-
-		//RGB trace(NFF * nff, Ray ray, int depth, float ior);
+		static RayTracer * getInstance();	
 		RGB trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior);
 		Object* closestIntersection(std::vector<Object*> objects, glm::vec3 &Pi, glm::vec3 &normal, Ray ray);
 };

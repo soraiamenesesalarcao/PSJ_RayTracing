@@ -29,6 +29,5 @@ class Material{
 		void setT(float t);
 		void setIndexRefraction(float indexRefraction);
 		void setColor(RGB color);
-
 };
 

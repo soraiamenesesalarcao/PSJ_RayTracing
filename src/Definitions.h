@@ -24,6 +24,7 @@
 
 // MACROS
 #define MAX_DEPTH 6
+#define EPSILON 0.001f
 
 // Structure for representing a vertex of a polygon
 typedef struct {
@@ -86,8 +87,3 @@ typedef struct {
     std::vector<ConeCylinder> coneAndCylinders;
     std::vector<PolygonPatch> polygonPatchs;
 } NFF;
-
-typedef struct {
-    glm::vec3 origin;
-	glm::vec3 direction;
-} Ray;

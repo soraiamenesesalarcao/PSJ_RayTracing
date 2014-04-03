@@ -14,6 +14,4 @@ class Light{
 		RGB getColor();
 
 		void setPosition(float x, float y, float z);
-
-
 };

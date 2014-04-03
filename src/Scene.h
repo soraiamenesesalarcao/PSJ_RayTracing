@@ -7,6 +7,7 @@
 #include "Object.h"
 #include "Light.h"
 #include "Plan.h"
+#include "Ray.h"
 
 class Scene {
 
@@ -21,5 +22,4 @@ class Scene {
 		static Scene * getInstance();
 		void init();
 		void draw();
-
 };

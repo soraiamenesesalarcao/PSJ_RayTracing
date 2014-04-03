@@ -69,8 +69,8 @@ Ray Camera::PrimaryRay(float x, float y) {
 	float u_x = (x/(_winWidth-1)) * w;
 	float v_y = (y/(_winHeight-1)) * h;
 
-	ray.origin = eye;
-	ray.direction = glm::normalize(-df*ze + (v_y - h/2)*ye + (u_x - w/2)*xe); //it's a direction so don't forget to normalize
+	ray.setOrigin(eye);
+	ray.setDirection(glm::normalize(-df*ze + (v_y - h/2)*ye + (u_x - w/2)*xe)); //it's a direction so don't forget to normalize
 
 	return ray;
 }
