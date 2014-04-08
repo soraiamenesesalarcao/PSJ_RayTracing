@@ -44,7 +44,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
 			float attenuation;
-			float radius = 1;
+			float radius = 1.5f;
 			float shadow = 0;
 			float flagShadow = false;
 
@@ -52,15 +52,11 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 				// se intersecta com um shadow feeler
 				glm::vec3 aux;
 				glm::vec3 nn = -L;
-				glm::vec3 otherL = L;
 				glm::vec3 vup;
 				float delta = 0.00000000009;;
-				if(otherL[0] >= otherL[1] && otherL[0] >= otherL[2])
-					vup[0] = 1; vup[1] = 0; vup[2] = 0;
-				if(otherL[1] >= otherL[0] && otherL[1] >= otherL[2])
-					vup[0] = 0; vup[1] = 1; vup[2] = 0;
-				if(otherL[2] >= otherL[0] && otherL[2] >= otherL[1])
-					vup[0] = 0; vup[1] = 0; vup[2] = 1;
+				if(L[0] >= L[1] && L[0] >= L[2]) vup[0] = 1; vup[1] = 0; vup[2] = 0;
+				if(L[1] >= L[0] && L[1] >= L[2]) vup[0] = 0; vup[1] = 1; vup[2] = 0;
+				if(L[2] >= L[0] && L[2] >= L[1]) vup[0] = 0; vup[1] = 0; vup[2] = 1;
 				glm::vec3 uu = glm::cross(vup, nn);
 				glm::vec3 vv = glm::cross(nn, uu);
 
