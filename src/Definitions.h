@@ -25,6 +25,7 @@
 // MACROS
 #define MAX_DEPTH 6
 #define EPSILON 0.001f
+#define SHADOW_RAYS 25
 
 // Structure for representing a vertex of a polygon
 typedef struct {
