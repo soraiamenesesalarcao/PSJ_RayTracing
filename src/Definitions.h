@@ -26,6 +26,8 @@
 #define MAX_DEPTH 6
 #define EPSILON 0.001f
 #define LIGHT_SIDE 4
+#define LIGHT_GRID_RATIO (1.0 / LIGHT_SIDE)
+#define LIGHT_EPSILON 0.1
 
 // Structure for representing a vertex of a polygon
 typedef struct {

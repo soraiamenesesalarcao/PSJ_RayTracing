@@ -12,6 +12,7 @@ RayTracer * RayTracer::getInstance(){
 /*Algoritmo ray tracing*/
 RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior){
 	
+	
 	RGB color;
 	glm::vec3 closestPi, closestNormal;
 	glm::vec2 lightAttenuation(0.06f, 0.06f);
@@ -56,9 +57,9 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 				for(int x = 0; x < LIGHT_SIDE; x++) {
 					for(int y = 0; y < LIGHT_SIDE; y++) {
 
-						newLightPosition.x = lights[l].getPosition().x + x * 0.1;
+						newLightPosition.x = lights[l].getPosition().x + x *  (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
 						newLightPosition.y = lights[l].getPosition().y;
-						newLightPosition.z = lights[l].getPosition().z + y * 0.1;
+						newLightPosition.z = lights[l].getPosition().z + y *  (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
 
 						newL = glm::normalize(newLightPosition - closestPi);
 
