@@ -24,77 +24,69 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 	else {
 		float diffuseR = 0, diffuseG = 0, diffuseB = 0;
 		float specularR = 0, specularG = 0, specularB = 0;
-		glm::vec3 V, L, R, N, Vt;
-
-		glm::vec3 auxDir = glm::vec3(ray.getDirection().x * EPSILON, ray.getDirection().y * EPSILON, ray.getDirection().z * EPSILON); 
+		float newLightR = 0, newLightG = 0, newLightB = 0, gridLightR, gridLightG, gridLightB;
+		glm::vec3 V, L, R, N, Vt, newLightPosition, newL, newOrigin;
+  
 		V = glm::normalize(Camera::getInstance()->computeV());
 		N = glm::normalize(closestNormal);
 
 		for(int l = 0; l < lights.size(); l++){
+
+			newLightR = 0.0;
+			newLightG = 0.0;
+			newLightB = 0.0;
 			//Vector unitario na direccao do point para a posicao da luz;
 			L = glm::normalize(lights[l].getPosition() - closestPi);
 
 			//inicializacao do shadow feeler
 			Ray shadowFeeler;
-			glm::vec3 shadowFeelerOrigin = closestPi - auxDir;
-			glm::vec3 shadowFeelerDirection = L;
-			
+	
 			//vector reflexao especular
 			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
 
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
 			float attenuation;
-			float radius = 1.5f;
-			float shadow = 0;
-			float flagShadow = false;
 
-			if(LdotN > 0) {		
-				// se intersecta com um shadow feeler
-				glm::vec3 aux;
-				glm::vec3 nn = -L;
-				glm::vec3 vup;
-				float delta = 0.00000000009;;
-				if(L[0] >= L[1] && L[0] >= L[2]) vup[0] = 1; vup[1] = 0; vup[2] = 0;
-				if(L[1] >= L[0] && L[1] >= L[2]) vup[0] = 0; vup[1] = 1; vup[2] = 0;
-				if(L[2] >= L[0] && L[2] >= L[1]) vup[0] = 0; vup[1] = 0; vup[2] = 1;
-				glm::vec3 uu = glm::cross(vup, nn);
-				glm::vec3 vv = glm::cross(nn, uu);
+			gridLightR = lights[l].getColor().r / (LIGHT_SIDE * LIGHT_SIDE);
+			gridLightG = lights[l].getColor().g / (LIGHT_SIDE * LIGHT_SIDE);
+			gridLightB = lights[l].getColor().b / (LIGHT_SIDE * LIGHT_SIDE);
 
-				for(int i = 0; i < SHADOW_RAYS; i++){
-					float du = rand()/float(RAND_MAX+1);
-					float dv = rand()/float(RAND_MAX+1);
-					glm::vec3 shadowRayDirection = ( lights[l].getPosition() + uu *
-													 glm::cos(radius * du) * radius + 
-													 vv * glm::sin(radius * dv) * radius) - closestPi;
-					shadowRayDirection = glm::normalize(shadowRayDirection);
-					glm::vec3 shadowRayStart = shadowFeelerOrigin + delta * shadowRayDirection;
+			if(LdotN > 0) {	
 
-					shadowFeeler.setOrigin(shadowRayStart);
-					shadowFeeler.setDirection(shadowRayDirection);
+				for(int x = 0; x < LIGHT_SIDE; x++) {
+					for(int y = 0; y < LIGHT_SIDE; y++) {
 
-					if(closestIntersection(objects, aux, aux, shadowFeeler) != NULL){
-						shadow += 1;
-						flagShadow = true;
+						newLightPosition.x = lights[l].getPosition().x + x * 0.1;
+						newLightPosition.y = lights[l].getPosition().y;
+						newLightPosition.z = lights[l].getPosition().z + y * 0.1;
+
+						newL = glm::normalize(newLightPosition - closestPi);
+
+						newOrigin = closestPi + newL * EPSILON;
+
+						shadowFeeler.setOrigin(newOrigin);
+						shadowFeeler.setDirection(newL);
+
+						// se intersecta com um shadow feeler
+						glm::vec3 aux;
+						if(closestIntersection(objects, aux, aux, shadowFeeler) != NULL) {
+							continue;					
+						}
+						newLightR += gridLightR;
+						newLightG += gridLightG;
+						newLightB += gridLightB;
 					}
-
-					// recalcular origin e direction para o prox raio
-				}
-				if(flagShadow){
-					diffuseR *= (shadow / SHADOW_RAYS);
-					diffuseG *= (shadow / SHADOW_RAYS);
-					diffuseB *= (shadow / SHADOW_RAYS);
-					continue;
 				}
 
 				attenuation = 1.0f / (1.0f + lightAttenuation.x * glm::length(closestPi - lights[l].getPosition()) 
 									       + lightAttenuation.y * pow(glm::length(closestPi -  lights[l].getPosition()), 
-										   2.0f));
-				
+										   2.0f));				
 				// Componente difusa
-				diffuseR += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().r * lights[l].getColor().r * LdotN;
-				diffuseG += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().g * lights[l].getColor().g * LdotN;
-				diffuseB += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().b * lights[l].getColor().b * LdotN;
+				diffuseR += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().r * newLightR * LdotN;
+				diffuseG += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().g * newLightG * LdotN;
+				diffuseB += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().b * newLightB * LdotN;
 
+				
 
 				//componente especular
 				float RdotL = std::max(glm::dot(R,L), 0.0f);
