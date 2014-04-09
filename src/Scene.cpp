@@ -12,7 +12,7 @@ Scene * Scene::getInstance(){
 void Scene::init() {
 	_camera = new Viewpoint();
 	_background = new RGB();
-	ConfigLoader::loadSceneNFF("resources/balls_medium.nff", _background, &_lights, &_objects, _camera);
+	ConfigLoader::loadSceneNFF("resources/balls_high.nff", _background, &_lights, &_objects, _camera);
 	
 	Camera::getInstance()->init(_camera);
 
