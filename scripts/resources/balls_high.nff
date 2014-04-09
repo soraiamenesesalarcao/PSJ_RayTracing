@@ -5,7 +5,7 @@ at 0 0 0
 up 0 0 1
 angle 45
 hither 0.01
-resolution 200 200
+resolution 50 50
 l 4 3 2 1 1 1
 l 1 -4 4 1 1 1
 l -3 1 5 1 1 1

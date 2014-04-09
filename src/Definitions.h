@@ -22,6 +22,8 @@
 #include <gtc/matrix_transform.hpp>
 #include <ext.hpp>
 
+#include <omp.h>
+
 // MACROS
 #define MAX_DEPTH 6
 #define EPSILON 0.001f

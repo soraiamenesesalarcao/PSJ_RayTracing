@@ -93,6 +93,7 @@
     <ClCompile Include="..\src\Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="resources\balls_high.nff" />
     <None Include="resources\balls_low.nff" />
     <None Include="resources\balls_medium.nff" />
     <None Include="resources\jap.nff" />
