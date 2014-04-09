@@ -30,6 +30,7 @@
 #define LIGHT_SIDE 4
 #define LIGHT_GRID_RATIO (1.0 / LIGHT_SIDE)
 #define LIGHT_EPSILON 0.1
+#define THRESHOLD 0.3f
 
 // Structure for representing a vertex of a polygon
 typedef struct {

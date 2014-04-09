@@ -22,4 +22,5 @@ class Scene {
 		static Scene * getInstance();
 		void init();
 		void draw();
+		RGB monteCarlo(float x, float y, int depth);
 };
