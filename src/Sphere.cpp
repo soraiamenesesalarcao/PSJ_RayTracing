@@ -5,6 +5,10 @@ Sphere::Sphere(glm::vec3 center, float radius, Material mtl): Object(mtl){
 	_radius = radius;
 }
 
+void Sphere::setBoundingBox(){
+	
+}
+
 /* Calculo da intersecao de um raio a uma esfera 
  * 1 - normalizar vector direccao
  * 2 - calcular o quadrado da distancia da origem do raio ao centro da esfera

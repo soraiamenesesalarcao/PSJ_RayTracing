@@ -15,5 +15,6 @@ class Polygon : public Object{
 	public:
 		Polygon(std::vector<Vertex> vertices, Material mtl);
 		std::vector<Vertex> getVertices() { return _vertices; }
+		void setBoundingBox();
 		bool intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray);
 };

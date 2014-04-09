@@ -15,6 +15,7 @@ class Plan : public Object{
 		glm::vec3 getPoint2(){ return point_2; }
 		glm::vec3 getPoint3(){ return point_3; }
 
+		void setBoundingBox();
 		bool intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray);
 
 };

@@ -57,6 +57,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -70,6 +71,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -79,6 +81,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\BoundingBox.cpp" />
     <ClCompile Include="..\src\Camera.cpp" />
     <ClCompile Include="..\src\ConfigLoader.cpp" />
     <ClCompile Include="..\src\Light.cpp" />
@@ -102,6 +105,7 @@
     <None Include="resources\mount_very_high.nff" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\BoundingBox.h" />
     <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\ConfigLoader.h" />
     <ClInclude Include="..\src\Definitions.h" />

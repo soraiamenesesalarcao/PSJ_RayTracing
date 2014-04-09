@@ -7,3 +7,7 @@ Object::Object(Material mtl){
 Material Object::getMaterial(){
 	return _mtl;
 }
+
+BoundingBox Object::getBoundingBox() {
+	return _bb;
+}

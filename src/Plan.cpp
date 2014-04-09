@@ -6,6 +6,10 @@ Plan::Plan(glm::vec3 point1, glm::vec3 point2, glm::vec3 point3, Material mtl) :
 	point_3 = point3;
 }
 
+void Plan::setBoundingBox(){
+	
+}
+
 /* Calculo da intersecao de um raio a um plano 
  * (ponto A, B, C)
  * 1 - calcular a normal ao plano --> N = AB x AC = (B - A) x (C - A)

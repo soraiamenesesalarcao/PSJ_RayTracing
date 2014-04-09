@@ -5,6 +5,10 @@ Polygon::Polygon(std::vector<Vertex> vertices, Material mtl) : Object(mtl){
 
 }
 
+void Polygon::setBoundingBox(){
+	
+}
+
 bool Polygon::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray){
 	glm::vec3 v1 = glm::vec3(_vertices[0].vx, _vertices[0].vy, _vertices[0].vz);
 	glm::vec3 v2 = glm::vec3(_vertices[1].vx, _vertices[1].vy, _vertices[1].vz);
