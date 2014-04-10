@@ -19,12 +19,11 @@ class Camera {
 		glm::vec3 ze;
 
 		float df;
-		Camera();
 
     public: 
-		
+
+		Camera();
 		~Camera();
-		static Camera * getInstance();
 		void init(Viewpoint * viewpoint);
 		int GetResX();
 		int GetResY();

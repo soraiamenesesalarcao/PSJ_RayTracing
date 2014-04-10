@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
------------[ Programação 3D para Simulação de Jogos - Assignment 2 ]------------
+-----------[ Programação 3D para Simulação de Jogos - Assignment 3 ]------------
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ consiste na seguinte estutura de pastas:
 A aplicação suporta a leitura de um ficheiro NFF que pode conter uma cor de fundo,
 uma câmara, fontes de luz, materiais e primitivas (esferas, cones, cilindros,
 planos, polígonos e patches de polígonos).
-Sugere-se que os ficheiros externos a carregar seja colocado numa pasta 
+Sugere-se que os ficheiros externos a carregar sejam colocados numa pasta 
 "resources", incluída dentro da pasta onde se encontra o ficheiro .vsproj 
 (uma vez que é aí que se vai buscar o ficheiro .nff). A alteração explícita do 
 ficheiro a carregar é feita na classe Scene.

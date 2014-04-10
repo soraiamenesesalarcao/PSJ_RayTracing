@@ -10,6 +10,7 @@ int RES_X = 500, RES_Y = 500;
 /* ******************************* CALLBACKS ******************************** */
 /* ************************************************************************** */
 
+
 void reshape(int w, int h) { 
 	glClearColor(0.0, 0.0, 0.0, 0.5);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -22,8 +23,10 @@ void reshape(int w, int h) {
 }
 
 
-void drawScene() { 
+void drawScene() { 	
+	Scene::getInstance()->init();
 	Scene::getInstance()->draw();
+	Scene::getInstance()->~Scene();
 }
 
 
@@ -49,7 +52,7 @@ void setupGLUT(int argc, char* argv[]) {
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
 	glutInitWindowSize(RES_X-1, RES_Y-1);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("JAP Ray Tracing");
+	glutCreateWindow("Assignment 3: Ray Tracing");
 }
 
 
@@ -60,8 +63,8 @@ void setupGLUT(int argc, char* argv[]) {
 void init(int argc, char* argv[]) {
 	 // ordem relevante
 	Scene::getInstance()->init();
-	RES_X = Camera::getInstance()->GetResX();
-	RES_Y = Camera::getInstance()->GetResY(); 
+	RES_X = Scene::getInstance()->getCamera().GetResX();
+	RES_Y = Scene::getInstance()->getCamera().GetResY(); 
 	printf("resx = %d resy= %d.\n", RES_X, RES_Y);
 
 	setupGLUT(argc, argv);	

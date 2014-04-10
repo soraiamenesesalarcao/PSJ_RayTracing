@@ -10,10 +10,6 @@ Camera::Camera() {
 Camera::~Camera() {
 }
 
-Camera * Camera::getInstance(){
-	static Camera instance;
-	return &instance;
-}
 
 void Camera::init(Viewpoint * viewpoint){
 	_winWidth = viewpoint->res[0];

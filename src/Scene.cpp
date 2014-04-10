@@ -3,38 +3,51 @@
 Scene::Scene() {
 }
 
+
+Scene::~Scene() {
+	_camera2.~Camera();
+	_rt.~RayTracer();
+}
+
 Scene * Scene::getInstance(){
 	static Scene instance;
 	return &instance;
 }
 
 
+Camera Scene::getCamera() {
+	return _camera2;
+}
+
 void Scene::init() {
 	_camera = new Viewpoint();
 	_background = new RGB();
-	ConfigLoader::loadSceneNFF("resources/balls_high.nff", _background, &_lights, &_objects, _camera);
+	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _camera);
 	
-	Camera::getInstance()->init(_camera);
+	 _camera2.init(_camera);
 
 }
 
 void Scene::draw() {
 	time_t timer1, timer2;
-	int RES_X = Camera::getInstance()->GetResX();
-	int RES_Y = Camera::getInstance()->GetResY(); 
+	int RES_X = _camera2.GetResX();
+	int RES_Y = _camera2.GetResY(); 
 	int TOTAL = RES_X * RES_Y;
 	int nCPU = omp_get_num_procs();
 	std::vector<RGB> image = std::vector<RGB>(TOTAL);
 
+	
 	// Ray Tracing Calculation
 	time(&timer1);
+
 	omp_set_num_threads(nCPU);
-	#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))	
+	#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))
+
 	for (int y = 0; y < RES_Y; y++) {
 		for (int x = 0; x < RES_X; x++) {
 			//determinar em WCS o raio primario que vai do centro de projecao ao pixel
-			//Ray ray = Camera::getInstance()->PrimaryRay(x, y);
-			//RGB color = RayTracer::getInstance()->trace(_background, _lights, _objects, ray, 1, 1.0f);
+			//Ray ray =  _camera2.PrimaryRay(x, y);
+			//RGB color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera2.computeV()));
 			RGB color = monteCarlo(x, y, 1);
 			image[(RES_X*y) + x] = color;
 		}
@@ -76,8 +89,8 @@ RGB Scene::monteCarlo(float x, float y, int depth){
 
 	// It starts by tracing four rays at the corners of each pixel
 	for(int i = 0; i < 4; i++){
-		Ray ray = Camera::getInstance()->PrimaryRay(position[i].x, position[i].y);
-		color = RayTracer::getInstance()->trace(_background, _lights, _objects, ray, 1, 1.0f);
+		Ray ray = _camera2.PrimaryRay(position[i].x, position[i].y);
+		color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera2.computeV()));
 		colors[i] = glm::vec3(color.r, color.g, color.b);
 	}
 

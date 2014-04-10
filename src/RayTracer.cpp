@@ -3,14 +3,12 @@
 RayTracer::RayTracer() {
 }
 
-RayTracer * RayTracer::getInstance(){
-	static RayTracer instance;
-	return &instance;
+RayTracer::~RayTracer() {
 }
 
 
 /*Algoritmo ray tracing*/
-RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior){
+RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior, glm::vec3 V){
 	
 	
 	RGB color;
@@ -26,9 +24,8 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 		float diffuseR = 0, diffuseG = 0, diffuseB = 0;
 		float specularR = 0, specularG = 0, specularB = 0;
 		float newLightR = 0, newLightG = 0, newLightB = 0, gridLightR, gridLightG, gridLightB;
-		glm::vec3 V, L, R, N, Vt, newLightPosition, newL, newOrigin;
+		glm::vec3 L, R, N, Vt, newLightPosition, newL, newOrigin;
   
-		V = glm::normalize(Camera::getInstance()->computeV());
 		N = glm::normalize(closestNormal);
 
 		for(int l = 0; l < lights.size(); l++){
@@ -113,7 +110,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 			if(objectIntersect->getMaterial().getKs() > 0){
 				Ray reflectionRay;
 				reflectionRay.computeReflectedRay(closestPi, R);
-				RGB reflectionColor = trace(background, lights, objects, reflectionRay, depth + 1, ior);
+				RGB reflectionColor = trace(background, lights, objects, reflectionRay, depth + 1, ior, V);
 				color.r += reflectionColor.r * objectIntersect->getMaterial().getKs();
 				color.g += reflectionColor.g * objectIntersect->getMaterial().getKs();
 				color.b += reflectionColor.b * objectIntersect->getMaterial().getKs();
@@ -126,7 +123,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 				Ray refractionRay;
 				refractionRay.computeRefractedRay(closestPi, Vt, N, ior, objectIntersect->getMaterial().getIndexRefraction(), &newIOR);
 				if(refractionRay.getOrigin().x != NULL) {
-					RGB refractionColor = trace(background, lights, objects, refractionRay, depth + 1, newIOR);
+					RGB refractionColor = trace(background, lights, objects, refractionRay, depth + 1, newIOR, V);
 					color.r += refractionColor.r * objectIntersect->getMaterial().getT();
 					color.g += refractionColor.g * objectIntersect->getMaterial().getT();
 					color.b += refractionColor.b * objectIntersect->getMaterial().getT();
