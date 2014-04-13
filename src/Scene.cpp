@@ -5,7 +5,7 @@ Scene::Scene() {
 
 
 Scene::~Scene() {
-	_camera2.~Camera();
+	_camera.~Camera();
 	_rt.~RayTracer();
 }
 
@@ -16,15 +16,15 @@ Scene * Scene::getInstance(){
 
 
 Camera Scene::getCamera() {
-	return _camera2;
+	return _camera;
 }
 
 void Scene::init() {
-	_camera = new Viewpoint();
+	_viewpoint = new Viewpoint();
 	_background = new RGB();
-	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _camera);
+	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _viewpoint);
 	
-	 _camera2.init(_camera);
+	 _camera.init(_viewpoint);
 	 _needToDraw = true;
 }
 
@@ -32,8 +32,8 @@ void Scene::draw() {
 
 	if(_needToDraw) {
 		time_t timer1, timer2;
-		int RES_X = _camera2.GetResX();
-		int RES_Y = _camera2.GetResY(); 
+		int RES_X = _camera.GetResX();
+		int RES_Y = _camera.GetResY(); 
 		int TOTAL = RES_X * RES_Y;
 		int nCPU = omp_get_num_procs();
 		std::vector<RGB> image = std::vector<RGB>(TOTAL);
@@ -48,9 +48,9 @@ void Scene::draw() {
 		for (int y = 0; y < RES_Y; y++) {
 			for (int x = 0; x < RES_X; x++) {
 				//determinar em WCS o raio primario que vai do centro de projecao ao pixel
-				//Ray ray =  _camera2.PrimaryRay(x, y);
-				//RGB color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera2.computeV()));
-				RGB color = monteCarlo(x, y, 1);
+				Ray ray =  _camera.PrimaryRay(x, y);
+				RGB color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()));
+				//RGB color = monteCarlo(x, y, 1);
 				image[(RES_X*y) + x] = color;
 			}
 		}
@@ -100,8 +100,8 @@ RGB Scene::monteCarlo(float x, float y, int depth){
 
 	// It starts by tracing four rays at the corners of each pixel
 	for(int i = 0; i < 4; i++){
-		Ray ray = _camera2.PrimaryRay(position[i].x, position[i].y);
-		color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera2.computeV()));
+		Ray ray = _camera.PrimaryRay(position[i].x, position[i].y);
+		color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()));
 		colors[i] = glm::vec3(color.r, color.g, color.b);
 	}
 

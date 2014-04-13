@@ -14,10 +14,10 @@ class Scene {
 
 	private:
 		RGB * _background;
-		Viewpoint * _camera;
+		Viewpoint * _viewpoint;
 		std::vector<Light> _lights;
 		std::vector<Object*> _objects;
-		Camera _camera2;
+		Camera _camera;
 		RayTracer _rt;
 		bool _needToDraw;
 		Scene();
