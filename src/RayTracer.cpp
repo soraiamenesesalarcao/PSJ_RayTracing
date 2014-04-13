@@ -1,6 +1,7 @@
 #include "RayTracer.h"
 
 RayTracer::RayTracer() {
+	_usingGrid = false;
 }
 
 RayTracer::~RayTracer() {
@@ -28,7 +29,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
   
 		N = glm::normalize(closestNormal);
 
-		for(int l = 0; l < lights.size(); l++){
+		for(std::size_t l = 0; l < lights.size(); l++){
 
 			newLightR = 0.0;
 			newLightG = 0.0;
@@ -145,7 +146,7 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 	glm::vec3 closestPi, closestNormal;
 	float Ti, closestTi = FLT_MAX;
 
-	for(int i = 0; i < objects.size(); i++){
+	for(std::size_t i = 0; i < objects.size(); i++){
 		hasIntersectedLocal = objects[i]->intersect(&closestPi, &Ti, &closestNormal, ray);
 		if(hasIntersectedLocal) {
 			if(!hasIntersectedGlobal) {
@@ -164,4 +165,72 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 		}
 	}
 	return closestObject;
+}
+
+
+void RayTracer::computeBoundingBoxes(std::vector<Object*> objects) {
+	glm::vec3 pMin, pMax;
+
+	// init
+	objects[0]->setBoundingBox();
+	pMin = objects[0]->getBoundingBox().getPosMin();
+	pMax = objects[0]->getBoundingBox().getPosMax();
+
+	for(std::size_t i = 1; i < objects.size(); i++){
+		objects[i]->setBoundingBox();
+
+		pMin.x = std::min(objects[i]->getBoundingBox().getPosMin().x, pMin.x);
+		pMin.y = std::min(objects[i]->getBoundingBox().getPosMin().y, pMin.y);
+		pMin.z = std::min(objects[i]->getBoundingBox().getPosMin().z, pMin.z);
+
+		pMax.x = std::max(objects[i]->getBoundingBox().getPosMax().x, pMax.x);
+		pMax.y = std::max(objects[i]->getBoundingBox().getPosMax().y, pMax.y);
+		pMax.z = std::max(objects[i]->getBoundingBox().getPosMax().z, pMax.z);	
+				
+		pMin.x -= EPSILON;
+		pMin.y -= EPSILON;
+		pMin.z -= EPSILON;
+
+		pMax.x += EPSILON;
+		pMax.y += EPSILON;
+		pMax.z += EPSILON;
+
+		_grid.setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
+	}
+}
+
+
+void RayTracer::addObjectsToGrid(std::vector<Object*> objects) {
+	glm::vec3 obbMin, obbMax, gbbMin, N = _grid.getN(), W = _grid.getW();
+	int iMinX, iMinY, iMinZ, iMaxX, iMaxY, iMaxZ, x, y, z;
+
+	gbbMin = _grid.getBoundingBox().getPosMin();
+	_grid.setCells(objects.size(), MULTIPLY_FACTOR);
+
+	for(std::size_t i = 1; i < objects.size(); i++){
+		obbMin = objects[i]->getBoundingBox().getPosMin();
+		obbMax = objects[i]->getBoundingBox().getPosMax();
+		
+		iMinX = glm::clamp(((obbMin.x - gbbMin.x) * N.x) / W.x, 0.0f, N.x - 1);
+		iMinY = glm::clamp(((obbMin.y - gbbMin.y) * N.y) / W.y, 0.0f, N.y - 1);
+		iMinZ = glm::clamp(((obbMin.z - gbbMin.z) * N.z) / W.z, 0.0f, N.z - 1);
+
+		iMaxX = glm::clamp(((obbMax.x - gbbMin.x) * N.x) / W.x, 0.0f, N.x - 1);
+		iMaxY = glm::clamp(((obbMax.y - gbbMin.y) * N.y) / W.y, 0.0f, N.y - 1);
+		iMaxZ = glm::clamp(((obbMax.z - gbbMin.z) * N.z) / W.z, 0.0f, N.z - 1);
+				
+		for(x = iMinX; x < iMaxX; x++) {
+			for(y = iMinY; y < iMaxY; y++) {
+				for(z = iMinZ; z < iMaxZ; z++) {
+					_grid.getCell(x, y, z)->addObject(objects[i]);
+				}
+			}
+		}
+
+	}	
+}
+
+
+void RayTracer::toggleUsingGrid() {
+	_usingGrid = (_usingGrid) ? false : true;
 }
