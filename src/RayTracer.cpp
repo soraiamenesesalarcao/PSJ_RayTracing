@@ -168,6 +168,27 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 }
 
 
+Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::vec3 &Pi, glm::vec3 &normal, Ray ray){
+	bool hasIntersectedGlobal = false;
+	bool hasIntersectedLocal = false;
+	bool hasIntersectedGrid = false;
+
+	Object* closestObject = NULL;
+
+	glm::vec3 closestPi, closestNormal;
+	float Ti, closestTi = FLT_MAX;
+
+	// Check if the ray intersects the Grid's BB
+	hasIntersectedGrid = _grid.getBoundingBox().intersect(ray);
+	if(hasIntersectedGrid) {
+		
+		// TO DO
+
+	} 
+	return closestObject;
+}
+
+
 void RayTracer::computeBoundingBoxes(std::vector<Object*> objects) {
 	glm::vec3 pMin, pMax;
 

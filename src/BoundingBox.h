@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Definitions.h"
+#include "Ray.h"
 
 class BoundingBox {
 
@@ -14,6 +15,7 @@ class BoundingBox {
 		glm::vec3 getPosMax();
 		void setPosMin(float x, float y, float z);
 		void setPosMax(float x, float y, float z);
+		bool intersect(Ray ray);
 
 		
 };

@@ -25,6 +25,8 @@ void Scene::init() {
 	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _viewpoint);
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
+	 _antiAliased = false;
+	 _usingThreads = true;
 }
 
 void Scene::draw() {
@@ -34,22 +36,26 @@ void Scene::draw() {
 		int RES_X = _camera.GetResX();
 		int RES_Y = _camera.GetResY(); 
 		int TOTAL = RES_X * RES_Y;
-		int nCPU = omp_get_num_procs();
+		
 		std::vector<RGB> image = std::vector<RGB>(TOTAL);
-
-	
+			
 		// Ray Tracing Calculation
+
 		time(&timer1);
-
+		int nCPU = _usingThreads ? omp_get_num_procs() : 1;
 		omp_set_num_threads(nCPU);
-		#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))
-
+		#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))		
 		for (int y = 0; y < RES_Y; y++) {
 			for (int x = 0; x < RES_X; x++) {
-				//determinar em WCS o raio primario que vai do centro de projecao ao pixel
-				Ray ray =  _camera.PrimaryRay(x, y);
-				RGB color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()));
-				//RGB color = monteCarlo(x, y, 1);
+				RGB color;
+
+				if(!_antiAliased) {
+					//determinar em WCS o raio primario que vai do centro de projecao ao pixel
+					Ray ray =  _camera.PrimaryRay(x, y);
+					color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()));
+				}
+				else color = monteCarlo(x, y, 1);
+
 				image[(RES_X*y) + x] = color;
 			}
 		}
@@ -74,9 +80,9 @@ void Scene::draw() {
 }
 
 void Scene::update() {
-	if(Input::getInstance()->keyWasReleased('G')) {
-		std::cout << "cenaz" << std::endl;
+	if(Input::getInstance()->keyWasReleased('G')) {		
 		_needToDraw = true;
+		std::cout << "Vai redesenhar? " << _needToDraw << std::endl;
 		_rt.toggleUsingGrid();
 	}
 }

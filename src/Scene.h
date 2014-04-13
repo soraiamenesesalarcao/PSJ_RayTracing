@@ -20,6 +20,8 @@ class Scene {
 		Camera _camera;
 		RayTracer _rt;
 		bool _needToDraw;
+		bool _antiAliased;
+		bool _usingThreads;
 		Scene();
 
 	public:
