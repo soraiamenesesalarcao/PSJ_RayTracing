@@ -85,6 +85,7 @@
     <ClCompile Include="..\src\Camera.cpp" />
     <ClCompile Include="..\src\Cell.cpp" />
     <ClCompile Include="..\src\ConfigLoader.cpp" />
+    <ClCompile Include="..\src\Grid.cpp" />
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\Light.cpp" />
     <ClCompile Include="..\src\main.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="..\src\Cell.h" />
     <ClInclude Include="..\src\ConfigLoader.h" />
     <ClInclude Include="..\src\Definitions.h" />
+    <ClInclude Include="..\src\Grid.h" />
     <ClInclude Include="..\src\Input.h" />
     <ClInclude Include="..\src\Light.h" />
     <ClInclude Include="..\src\Material.h" />

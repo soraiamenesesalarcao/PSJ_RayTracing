@@ -10,6 +10,7 @@ class Cell {
 		std::vector<Object *> _objects;
 
 	public:
+		Cell(int index);
 		int getIndex();
 		void setIndex(int index);
 		bool isEmpty();

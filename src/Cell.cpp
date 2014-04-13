@@ -1,5 +1,8 @@
 #include "Cell.h"
 
+Cell::Cell(int index) {
+	_index = index;
+}
 
 int Cell::getIndex() {
 	return _index;
