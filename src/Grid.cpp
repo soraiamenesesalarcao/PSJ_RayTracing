@@ -3,7 +3,7 @@
 
 Grid::Grid(float wx, float wy, float wz, int nObjects, int multiplyFactor) {
 	_cells = std::vector<Cell *>(nObjects);
-	int s = glm::pow((wx * wy * wz) / nObjects, 1.0f / 3.0f); // raiz cubica
+	float s = glm::pow((wx * wy * wz) / nObjects, 1.0f / 3.0f); // raiz cubica
 	_Nx = glm::ceil((multiplyFactor * wx) / s);
 	_Ny = glm::ceil((multiplyFactor * wy) / s);
 	_Nz = glm::ceil((multiplyFactor * wz) / s);
