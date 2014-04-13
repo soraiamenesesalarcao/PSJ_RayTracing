@@ -25,49 +25,60 @@ void Scene::init() {
 	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _camera);
 	
 	 _camera2.init(_camera);
-
+	 _needToDraw = true;
 }
 
 void Scene::draw() {
-	time_t timer1, timer2;
-	int RES_X = _camera2.GetResX();
-	int RES_Y = _camera2.GetResY(); 
-	int TOTAL = RES_X * RES_Y;
-	int nCPU = omp_get_num_procs();
-	std::vector<RGB> image = std::vector<RGB>(TOTAL);
+
+	if(_needToDraw) {
+		time_t timer1, timer2;
+		int RES_X = _camera2.GetResX();
+		int RES_Y = _camera2.GetResY(); 
+		int TOTAL = RES_X * RES_Y;
+		int nCPU = omp_get_num_procs();
+		std::vector<RGB> image = std::vector<RGB>(TOTAL);
 
 	
-	// Ray Tracing Calculation
-	time(&timer1);
+		// Ray Tracing Calculation
+		time(&timer1);
 
-	omp_set_num_threads(nCPU);
-	#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))
+		omp_set_num_threads(nCPU);
+		#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))
 
-	for (int y = 0; y < RES_Y; y++) {
-		for (int x = 0; x < RES_X; x++) {
-			//determinar em WCS o raio primario que vai do centro de projecao ao pixel
-			//Ray ray =  _camera2.PrimaryRay(x, y);
-			//RGB color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera2.computeV()));
-			RGB color = monteCarlo(x, y, 1);
-			image[(RES_X*y) + x] = color;
+		for (int y = 0; y < RES_Y; y++) {
+			for (int x = 0; x < RES_X; x++) {
+				//determinar em WCS o raio primario que vai do centro de projecao ao pixel
+				//Ray ray =  _camera2.PrimaryRay(x, y);
+				//RGB color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera2.computeV()));
+				RGB color = monteCarlo(x, y, 1);
+				image[(RES_X*y) + x] = color;
+			}
 		}
-	}
-	time(&timer2);
-	float time = difftime(timer2, timer1);
-	std::cout << "Time spent Ray Tracing: " << time << " seconds" << std::endl;
+		time(&timer2);
+		float time = difftime(timer2, timer1);
+		std::cout << "Time spent Ray Tracing: " << time << " seconds" << std::endl;
 
-	// Draw Scene
-	for (int y = 0; y < RES_Y; y++) {
-		for (int x = 0; x < RES_X; x++) {
-			glBegin(GL_POINTS);		
-			glColor3f(image[(RES_X*y) + x].r, image[(RES_X*y) + x].g, image[(RES_X*y) + x].b);
-			glVertex2f(x, y);		
+		// Draw Scene
+		for (int y = 0; y < RES_Y; y++) {
+			for (int x = 0; x < RES_X; x++) {
+				glBegin(GL_POINTS);		
+				glColor3f(image[(RES_X*y) + x].r, image[(RES_X*y) + x].g, image[(RES_X*y) + x].b);
+				glVertex2f(x, y);		
+			}
+			glEnd(); //fica muito mais rapido!!!
+			glFlush();
 		}
-		glEnd(); //fica muito mais rapido!!!
-		glFlush();
-	}
 
-	printf("Terminou!\n"); 
+		_needToDraw = false;
+		printf("Terminou!\n"); 
+	}
+}
+
+void Scene::update() {
+	if(Input::getInstance()->keyWasReleased('G')) {
+		std::cout << "cenaz" << std::endl;
+		_needToDraw = true;
+	}
 }
 
 /* Monte Carlo Sampling!!! */

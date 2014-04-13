@@ -11,10 +11,19 @@ int RES_X = 500, RES_Y = 500;
 /* ************************************************************************** */
 
 
+void idle() {
+	glutPostRedisplay();
+}
+
+void cleanup() {
+	std::cout << "Sou muito asseado" << std::endl;
+	Scene::getInstance()->~Scene();
+}
+
 void reshape(int w, int h) { 
 	glClearColor(0.0, 0.0, 0.0, 0.5);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, w, h);
+	glViewport(0, 0, RES_X, RES_Y);
 	glMatrixMode(GL_PROJECTION); 
 	glLoadIdentity();
 	gluOrtho2D(0, RES_X-1, 0, RES_Y-1);
@@ -23,10 +32,29 @@ void reshape(int w, int h) {
 }
 
 
-void drawScene() { 	
-	Scene::getInstance()->init();
-	Scene::getInstance()->draw();
-	Scene::getInstance()->~Scene();
+void drawScene() {	
+	Scene::getInstance()->update();
+	Scene::getInstance()->draw();	
+	Input::getInstance()->reset();
+}
+
+/* Input callbacks */
+
+void keyPressed(unsigned char key, int x, int y){
+	Input::getInstance()->keyPressed(key);
+}
+
+void keyUp(unsigned char key, int x, int y){
+	Input::getInstance()->keyUp(key);
+}
+
+void specialPressed(int key, int x, int y){
+	Input::getInstance()->specialPressed(key);
+}
+
+void specialUp(int key, int x, int y) {
+	Input::getInstance()->specialUp(key);
+
 }
 
 
@@ -35,8 +63,15 @@ void drawScene() {
 /* ************************************************************************** */
 
 void setupCallbacks()  {
+	glutIdleFunc(idle);
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(drawScene);
+	glutKeyboardFunc(keyPressed);
+	glutKeyboardUpFunc(keyUp);
+	glutSpecialFunc(specialPressed);
+	glutSpecialUpFunc(specialUp);
+	atexit(cleanup);
+
 }
 
 

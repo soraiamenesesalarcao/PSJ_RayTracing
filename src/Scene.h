@@ -8,6 +8,7 @@
 #include "Light.h"
 #include "Plan.h"
 #include "Ray.h"
+#include "Input.h"
 
 class Scene {
 
@@ -18,6 +19,7 @@ class Scene {
 		std::vector<Object*> _objects;
 		Camera _camera2;
 		RayTracer _rt;
+		bool _needToDraw;
 		Scene();
 
 	public:
@@ -26,5 +28,6 @@ class Scene {
 		Camera getCamera();
 		void init();
 		void draw();
+		void update();
 		RGB monteCarlo(float x, float y, int depth);
 };
