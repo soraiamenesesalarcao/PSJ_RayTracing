@@ -2,8 +2,6 @@
 
 #include "Definitions.h"
 #include "Object.h"
-#include "Sphere.h"
-#include "Polygon.h"
 
 class Cell {
 	
