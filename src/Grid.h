@@ -1,19 +1,22 @@
 #pragma once
 
 #include "Definitions.h"
-#include "Object.h"
 #include "Cell.h"
 
 class Grid {
 	
 	private:
 		std::vector<Cell *> _cells;
-		int _Nx;
-		int _Ny;
-		int _Nz;
+		BoundingBox _bb;
+		glm::vec3 _N;
+		glm::vec3 _W;
 
 	public:
-		Grid(float wx, float wy, float wz, int nObjects, int multiplyFactor);
 		Cell * getCell(int x, int y, int z);
-		void init();
+		glm::vec3 getN();
+		glm::vec3 getW();
+		BoundingBox getBoundingBox();
+		void setBoundingBox(float pMinX, float pMinY, float pMinZ,
+							float pMaxX, float pMaxY, float pMaxZ);
+		void setCells(int nObjects, int multiplyFactor);
 };

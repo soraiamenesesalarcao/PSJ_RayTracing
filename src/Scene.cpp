@@ -23,9 +23,9 @@ void Scene::init() {
 	_viewpoint = new Viewpoint();
 	_background = new RGB();
 	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _viewpoint);
-	
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
+	 _usingGrid = false;
 }
 
 void Scene::draw() {
@@ -78,7 +78,71 @@ void Scene::update() {
 	if(Input::getInstance()->keyWasReleased('G')) {
 		std::cout << "cenaz" << std::endl;
 		_needToDraw = true;
+		_usingGrid = (_usingGrid) ? false : true;
 	}
+}
+
+
+void Scene::computeBoundingBoxes() {
+	glm::vec3 pMin, pMax;
+
+	// init
+	_objects[0]->setBoundingBox();
+	pMin = _objects[0]->getBoundingBox().getPosMin();
+	pMax = _objects[0]->getBoundingBox().getPosMax();
+
+	for(int i = 1; i < _objects.size(); i++){
+		_objects[i]->setBoundingBox();
+
+		pMin.x = std::min(_objects[i]->getBoundingBox().getPosMin().x, pMin.x);
+		pMin.y = std::min(_objects[i]->getBoundingBox().getPosMin().y, pMin.y);
+		pMin.z = std::min(_objects[i]->getBoundingBox().getPosMin().z, pMin.z);
+
+		pMax.x = std::max(_objects[i]->getBoundingBox().getPosMax().x, pMax.x);
+		pMax.y = std::max(_objects[i]->getBoundingBox().getPosMax().y, pMax.y);
+		pMax.z = std::max(_objects[i]->getBoundingBox().getPosMax().z, pMax.z);	
+				
+		pMin.x -= EPSILON;
+		pMin.y -= EPSILON;
+		pMin.z -= EPSILON;
+
+		pMax.x += EPSILON;
+		pMax.y += EPSILON;
+		pMax.z += EPSILON;
+
+		_grid.setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
+	}
+}
+
+
+void Scene::addObjectsToGrid() {
+	glm::vec3 obbMin, obbMax, gbbMin, N = _grid.getN(), W = _grid.getW();
+	int iMinX, iMinY, iMinZ, iMaxX, iMaxY, iMaxZ, x, y, z;
+
+	gbbMin = _grid.getBoundingBox().getPosMin();
+	_grid.setCells(_objects.size(), MULTIPLY_FACTOR);
+
+	for(int i = 1; i < _objects.size(); i++){
+		obbMin = _objects[i]->getBoundingBox().getPosMin();
+		obbMax = _objects[i]->getBoundingBox().getPosMax();
+		
+		iMinX = glm::clamp(((obbMin.x - gbbMin.x) * N.x) / W.x, 0.0f, N.x - 1);
+		iMinY = glm::clamp(((obbMin.y - gbbMin.y) * N.y) / W.y, 0.0f, N.y - 1);
+		iMinZ = glm::clamp(((obbMin.z - gbbMin.z) * N.z) / W.z, 0.0f, N.z - 1);
+
+		iMaxX = glm::clamp(((obbMax.x - gbbMin.x) * N.x) / W.x, 0.0f, N.x - 1);
+		iMaxY = glm::clamp(((obbMax.y - gbbMin.y) * N.y) / W.y, 0.0f, N.y - 1);
+		iMaxZ = glm::clamp(((obbMax.z - gbbMin.z) * N.z) / W.z, 0.0f, N.z - 1);
+				
+		for(x = iMinX; x < iMaxX; x++) {
+			for(y = iMinY; y < iMaxY; y++) {
+				for(z = iMinZ; z < iMaxZ; z++) {
+					_grid.getCell(x, y, z)->addObject(_objects[i]);
+				}
+			}
+		}
+
+	}	
 }
 
 /* Monte Carlo Sampling!!! */

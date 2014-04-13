@@ -9,6 +9,7 @@
 #include "Plan.h"
 #include "Ray.h"
 #include "Input.h"
+#include "Grid.h"
 
 class Scene {
 
@@ -19,7 +20,9 @@ class Scene {
 		std::vector<Object*> _objects;
 		Camera _camera;
 		RayTracer _rt;
+		Grid _grid;
 		bool _needToDraw;
+		bool _usingGrid;
 		Scene();
 
 	public:
@@ -29,5 +32,8 @@ class Scene {
 		void init();
 		void draw();
 		void update();
+		void computeBoundingBoxes();
+		void addObjectsToGrid();
 		RGB monteCarlo(float x, float y, int depth);
+		
 };
