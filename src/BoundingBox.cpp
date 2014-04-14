@@ -20,7 +20,7 @@ void BoundingBox::setPosMax(float x, float y, float z) {
 	_posMax = glm::vec3(x, y, z);
 }
 
-bool BoundingBox::intersect(Ray ray) {
+bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax) {
 	float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
 
 	// inverting ray's direction to avoid division by zero
@@ -74,6 +74,14 @@ bool BoundingBox::intersect(Ray ray) {
 
 	/*if (tmin > r.tmin) r.tmin = tmin;
     if (tmax < r.tmax) r.tmax = tmax;*/
+
+	tMin->x = tMinX;
+	tMin->y = tMinY;
+	tMin->z = tMinZ;
+
+	tMax->x = tMaxX;
+	tMax->y = tMaxY;
+	tMax->z = tMaxZ;
 
 	return true;
 }

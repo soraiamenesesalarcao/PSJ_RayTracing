@@ -14,10 +14,11 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 	
 	RGB color;
 	glm::vec3 closestPi, closestNormal;
+	float closestTi;
 	glm::vec2 lightAttenuation(0.06f, 0.06f);
 
 	//determina a interseccao mais proxima com um objeto
-	Object* objectIntersect = closestIntersection(objects, closestPi, closestNormal, ray);
+	Object* objectIntersect = closestIntersection(objects, closestPi, closestTi, closestNormal, ray);
 	if(objectIntersect == NULL){
 		color.r = background->r; color.g = background->g; color.b = background->b;
 	} 
@@ -68,7 +69,8 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 
 						// se intersecta com um shadow feeler
 						glm::vec3 aux;
-						if(closestIntersection(objects, aux, aux, shadowFeeler) != NULL) {
+						float auxT;
+						if(closestIntersection(objects, aux, auxT, aux, shadowFeeler) != NULL) {
 							continue;					
 						}
 						newLightR += gridLightR;
@@ -137,29 +139,31 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 	return color;
 }
 
-Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &Pi, glm::vec3 &normal, Ray ray){
+Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &Pi, float &Ti, glm::vec3 &normal, Ray ray){
 	bool hasIntersectedGlobal = false;
 	bool hasIntersectedLocal = false;
 
 	Object* closestObject = NULL;
 
 	glm::vec3 closestPi, closestNormal;
-	float Ti, closestTi = FLT_MAX;
+	float tempTi, closestTi = FLT_MAX;
 
 	for(std::size_t i = 0; i < objects.size(); i++){
-		hasIntersectedLocal = objects[i]->intersect(&closestPi, &Ti, &closestNormal, ray);
+		hasIntersectedLocal = objects[i]->intersect(&closestPi, &tempTi, &closestNormal, ray);
 		if(hasIntersectedLocal) {
 			if(!hasIntersectedGlobal) {
 				closestObject = objects[i];
-				closestTi = Ti;
+				closestTi = tempTi;
 				Pi = closestPi;
+				Ti = closestTi;
 				normal = closestNormal;
 				hasIntersectedGlobal = true;
 			}
-			if(Ti < closestTi) {
+			if(tempTi < closestTi) {
 				closestObject = objects[i];
-				closestTi = Ti;
+				closestTi = tempTi;
 				Pi = closestPi;
+				Ti = closestTi;
 				normal = closestNormal;
 			}
 		}
@@ -168,87 +172,41 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 }
 
 
-Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::vec3 &Pi, glm::vec3 &normal, Ray ray){
-	bool hasIntersectedGlobal = false;
-	bool hasIntersectedLocal = false;
-	bool hasIntersectedGrid = false;
+Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::vec3 &Pi, float &Ti, glm::vec3 &normal, Ray ray){
 
 	Object* closestObject = NULL;
-
-	glm::vec3 closestPi, closestNormal;
-	float Ti, closestTi = FLT_MAX;
+	glm::vec3 rayTmax, rayTmin;
+	Cell * startingCell, * intersectionCell;
+	int stepX, stepY, stepZ;
+	bool hasIntersectedGrid = false;
 
 	// Check if the ray intersects the Grid's BB
-	hasIntersectedGrid = _grid.getBoundingBox().intersect(ray);
+	hasIntersectedGrid = _grid.getBoundingBox().intersect(ray, &rayTmin, &rayTmax);
 	if(hasIntersectedGrid) {
 		
-		// TO DO
+		// 1) take the starting cell:
+		// - the one where the ray origin is
+		// OR
+		// - the one where the ray enters the grid
 
+		// 4) tMaxX, tMaxY = ray->box intersection
+		startingCell = _grid.getStartingCell(ray, rayTmin);
+				
+
+		// 3) if ray.direction.x < 0 => stepX = -1 else stepX = 1; same for y
+		stepX = (ray.getDirection().x >= 0) ? 1 : -1;
+		stepY = (ray.getDirection().y >= 0) ? 1 : -1;
+		stepZ = (ray.getDirection().z >= 0) ? 1 : -1;
+
+		// 2), 5) and 6)
+		intersectionCell = _grid.cellTraversal(startingCell, &rayTmin, &rayTmax, stepX, stepY, stepZ);
+		// compute closest intersection inside the grid
+		closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
+		intersectionCell = _grid.cellTraversal(intersectionCell, &rayTmin, &rayTmax, stepX, stepY, stepZ);	
+		// comparar aqui
+//		closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);			
 	} 
 	return closestObject;
-}
-
-
-void RayTracer::computeBoundingBoxes(std::vector<Object*> objects) {
-	glm::vec3 pMin, pMax;
-
-	// init
-	objects[0]->setBoundingBox();
-	pMin = objects[0]->getBoundingBox().getPosMin();
-	pMax = objects[0]->getBoundingBox().getPosMax();
-
-	for(std::size_t i = 1; i < objects.size(); i++){
-		objects[i]->setBoundingBox();
-
-		pMin.x = std::min(objects[i]->getBoundingBox().getPosMin().x, pMin.x);
-		pMin.y = std::min(objects[i]->getBoundingBox().getPosMin().y, pMin.y);
-		pMin.z = std::min(objects[i]->getBoundingBox().getPosMin().z, pMin.z);
-
-		pMax.x = std::max(objects[i]->getBoundingBox().getPosMax().x, pMax.x);
-		pMax.y = std::max(objects[i]->getBoundingBox().getPosMax().y, pMax.y);
-		pMax.z = std::max(objects[i]->getBoundingBox().getPosMax().z, pMax.z);	
-				
-		pMin.x -= EPSILON;
-		pMin.y -= EPSILON;
-		pMin.z -= EPSILON;
-
-		pMax.x += EPSILON;
-		pMax.y += EPSILON;
-		pMax.z += EPSILON;
-
-		_grid.setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
-	}
-}
-
-
-void RayTracer::addObjectsToGrid(std::vector<Object*> objects) {
-	glm::vec3 obbMin, obbMax, gbbMin, N = _grid.getN(), W = _grid.getW();
-	int iMinX, iMinY, iMinZ, iMaxX, iMaxY, iMaxZ, x, y, z;
-
-	gbbMin = _grid.getBoundingBox().getPosMin();
-	_grid.setCells(objects.size(), MULTIPLY_FACTOR);
-
-	for(std::size_t i = 1; i < objects.size(); i++){
-		obbMin = objects[i]->getBoundingBox().getPosMin();
-		obbMax = objects[i]->getBoundingBox().getPosMax();
-		
-		iMinX = glm::clamp(((obbMin.x - gbbMin.x) * N.x) / W.x, 0.0f, N.x - 1);
-		iMinY = glm::clamp(((obbMin.y - gbbMin.y) * N.y) / W.y, 0.0f, N.y - 1);
-		iMinZ = glm::clamp(((obbMin.z - gbbMin.z) * N.z) / W.z, 0.0f, N.z - 1);
-
-		iMaxX = glm::clamp(((obbMax.x - gbbMin.x) * N.x) / W.x, 0.0f, N.x - 1);
-		iMaxY = glm::clamp(((obbMax.y - gbbMin.y) * N.y) / W.y, 0.0f, N.y - 1);
-		iMaxZ = glm::clamp(((obbMax.z - gbbMin.z) * N.z) / W.z, 0.0f, N.z - 1);
-				
-		for(x = iMinX; x < iMaxX; x++) {
-			for(y = iMinY; y < iMaxY; y++) {
-				for(z = iMinZ; z < iMaxZ; z++) {
-					_grid.getCell(x, y, z)->addObject(objects[i]);
-				}
-			}
-		}
-
-	}	
 }
 
 

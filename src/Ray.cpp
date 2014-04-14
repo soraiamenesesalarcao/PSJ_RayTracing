@@ -1,16 +1,30 @@
 #include "Ray.h"
 
-glm::vec3 Ray::getOrigin()  {
+
+int Ray::getRayID() {
+	return _rayID;
+}
+
+
+void Ray::setRayID(int ID) {
+	_rayID = ID;
+}
+
+
+glm::vec3 Ray::getOrigin() {
 	return _origin;
 }
+
 
 glm::vec3 Ray::getDirection() {
 	return _direction;
 }
 
+
 void Ray::setOrigin(glm::vec3 origin) {
 	_origin = origin;
 }
+
 
 void Ray::setDirection(glm::vec3 direction) {
 	_direction = direction;

@@ -16,9 +16,7 @@ class RayTracer {
 		RayTracer();
 		~RayTracer();
 		RGB trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior, glm::vec3 V);
-		Object* closestIntersection(std::vector<Object*> objects, glm::vec3 &Pi, glm::vec3 &normal, Ray ray);
-		Object* closestIntersectionGrid(std::vector<Object*> objects, glm::vec3 &Pi, glm::vec3 &normal, Ray ray);
-		void computeBoundingBoxes(std::vector<Object*> objects);
-		void addObjectsToGrid(std::vector<Object*> objects);
+		Object* closestIntersection(std::vector<Object*> objects, glm::vec3 &Pi, float &Ti, glm::vec3 &normal, Ray ray);
+		Object* closestIntersectionGrid(std::vector<Object*> objects, glm::vec3 &Pi, float &Ti, glm::vec3 &normal, Ray ray);
 		void toggleUsingGrid();
 };

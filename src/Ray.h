@@ -5,10 +5,13 @@
 class Ray {
 
 	private:
+		int _rayID;
 		glm::vec3 _origin;
-		glm::vec3 _direction;
+		glm::vec3 _direction;		
 
 	public:
+		int getRayID();
+		void setRayID(int ID);
 		glm::vec3 getOrigin();
 		glm::vec3 getDirection();
 		void setOrigin(glm::vec3 origin);

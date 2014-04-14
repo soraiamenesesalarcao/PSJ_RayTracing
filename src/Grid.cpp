@@ -1,19 +1,96 @@
 #include "Grid.h"
 
 
+glm::vec3 Grid::getN() {
+	return _N;
+}
+
+
+glm::vec3 Grid::getW() {
+	return _W;
+}
+
+
 Cell * Grid::getCell(int x, int y, int z) {
 	int index = x + _N.x * y + _N.x * _N.y * z;
 	return _cells[index];
 }
 
 
-glm::vec3 Grid::getN() {
-	return _N;
+Cell * Grid::getStartingCell(Ray ray, glm::vec3 rayT) {
+	int cx, cy, cz;
+	if(	ray.getOrigin().x < _bb.getPosMin().x || ray.getOrigin().x < _bb.getPosMin().x
+		|| ray.getOrigin().y < _bb.getPosMin().y || ray.getOrigin().y < _bb.getPosMin().y
+		|| ray.getOrigin().z < _bb.getPosMin().z || ray.getOrigin().z < _bb.getPosMin().z) {
+
+			// compute adjacent voxel's coords
+			cx = (rayT.x * _N.x) / _W.x;
+			cy = (rayT.y * _N.y) / _W.y;
+			cz = (rayT.z * _N.z) / _W.z; 
+	}
+	else {
+		cx = (ray.getOrigin().x * _N.x) / _W.x;
+		cy = (ray.getOrigin().y * _N.y) / _W.y;
+		cz = (ray.getOrigin().z * _N.z) / _W.z;
+	}
+	return getCell(cx, cy, cz);
 }
 
-glm::vec3 Grid::getW() {
-	return _W;
+Cell * Grid::cellTraversal(	Cell * startingCell, 
+							glm::vec3 * rayTmin, glm::vec3 * rayTmax,
+							int stepX, int stepY, int stepZ) {
+	glm::vec3 rayDelta;
+	int iX, iY, iZ;
+	Cell * intersectedCell = NULL;
+
+	// 2) X = starting cell.x; Y = starting cell.y (indices)
+	iX = startingCell->getX();
+	iY = startingCell->getY();
+	iZ = startingCell->getZ();
+
+	// 5) tDeltaX, tDeltaY = remaining ray in the cell
+	rayDelta.x = (rayTmax->x - rayTmin->x) / _N.x;
+	rayDelta.y = (rayTmax->y - rayTmin->y) / _N.y;
+	rayDelta.z = (rayTmax->z - rayTmin->z) / _N.z;
+
+	// 6) Incremental phase
+
+	intersectedCell = getCell(iX, iY, iZ);
+	while(intersectedCell->isEmpty()) {
+		if(rayTmax->x < rayTmax->y) {
+			if(rayTmax->x < rayTmax->z) {
+				iX += stepX;
+				if(iX == _N.x)
+					return NULL;
+				rayTmax->x += rayDelta.x;
+			}
+			else {
+				iZ += stepZ;
+				if(iZ == _N.z)
+					return NULL;
+				rayTmax->z += rayDelta.z;
+			}
+		}
+		else {
+			if(rayTmax->y < rayTmax->z) {
+				iY += stepY;
+				if(iY == _N.y)
+					return NULL;
+				rayTmax->y += rayDelta.y;
+			}
+			else {
+				iZ += stepZ;
+				if(iZ == _N.z)
+					return NULL;
+				rayTmax->z += rayDelta.z;
+			}
+		}
+		// TODO extra comp
+		intersectedCell = getCell(iX, iY, iZ);
+	}	
+	return intersectedCell;
 }
+
 
 BoundingBox Grid::getBoundingBox() {
 	return _bb;
@@ -44,8 +121,71 @@ void Grid::setCells(int nObjects, int multiplyFactor) {
 		for(y = 0; y < _N.y; y++) {
 			for(z = 0; z < _N.z; z++) {
 				index = x + _N.x * y + _N.x * _N.y * z;
-				_cells[index] = new Cell(index);
+				_cells[index] = new Cell(x, y, z);
 			}
 		}
 	}
+}
+
+
+void Grid::computeBoundingBoxes(std::vector<Object*> objects) {
+	glm::vec3 pMin, pMax;
+
+	// init
+	objects[0]->setBoundingBox();
+	pMin = objects[0]->getBoundingBox().getPosMin();
+	pMax = objects[0]->getBoundingBox().getPosMax();
+
+	for(std::size_t i = 1; i < objects.size(); i++){
+		objects[i]->setBoundingBox();
+
+		pMin.x = std::min(objects[i]->getBoundingBox().getPosMin().x, pMin.x);
+		pMin.y = std::min(objects[i]->getBoundingBox().getPosMin().y, pMin.y);
+		pMin.z = std::min(objects[i]->getBoundingBox().getPosMin().z, pMin.z);
+
+		pMax.x = std::max(objects[i]->getBoundingBox().getPosMax().x, pMax.x);
+		pMax.y = std::max(objects[i]->getBoundingBox().getPosMax().y, pMax.y);
+		pMax.z = std::max(objects[i]->getBoundingBox().getPosMax().z, pMax.z);	
+				
+		pMin.x -= EPSILON;
+		pMin.y -= EPSILON;
+		pMin.z -= EPSILON;
+
+		pMax.x += EPSILON;
+		pMax.y += EPSILON;
+		pMax.z += EPSILON;
+
+		setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
+	}
+}
+
+
+void Grid::addObjectsToGrid(std::vector<Object*> objects) {
+	glm::vec3 obbMin, obbMax, gbbMin;
+	int iMinX, iMinY, iMinZ, iMaxX, iMaxY, iMaxZ, x, y, z;
+
+	gbbMin = getBoundingBox().getPosMin();
+	setCells(objects.size(), MULTIPLY_FACTOR);
+
+	for(std::size_t i = 1; i < objects.size(); i++){
+		obbMin = objects[i]->getBoundingBox().getPosMin();
+		obbMax = objects[i]->getBoundingBox().getPosMax();
+		
+		iMinX = glm::clamp(((obbMin.x - gbbMin.x) * _N.x) / _W.x, 0.0f, _N.x - 1);
+		iMinY = glm::clamp(((obbMin.y - gbbMin.y) * _N.y) / _W.y, 0.0f, _N.y - 1);
+		iMinZ = glm::clamp(((obbMin.z - gbbMin.z) * _N.z) / _W.z, 0.0f, _N.z - 1);
+
+		iMaxX = glm::clamp(((obbMax.x - gbbMin.x) * _N.x) / _W.x, 0.0f, _N.x - 1);
+		iMaxY = glm::clamp(((obbMax.y - gbbMin.y) * _N.y) / _W.y, 0.0f, _N.y - 1);
+		iMaxZ = glm::clamp(((obbMax.z - gbbMin.z) * _N.z) / _W.z, 0.0f, _N.z - 1);
+				
+		for(x = iMinX; x < iMaxX; x++) {
+			for(y = iMinY; y < iMaxY; y++) {
+				for(z = iMinZ; z < iMaxZ; z++) {
+					getCell(x, y, z)->addObject(objects[i]);
+				}
+			}
+		}
+
+	}	
 }
