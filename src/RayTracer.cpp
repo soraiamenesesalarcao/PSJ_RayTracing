@@ -176,6 +176,7 @@ Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::ve
 
 	Object* closestObject = NULL;
 	glm::vec3 rayTmax, rayTmin;
+	float tMax;
 	Cell * startingCell, * intersectionCell;
 	int stepX, stepY, stepZ;
 	bool hasIntersectedGrid = false;
@@ -199,12 +200,13 @@ Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::ve
 		stepZ = (ray.getDirection().z >= 0) ? 1 : -1;
 
 		// 2), 5) and 6)
-		intersectionCell = _grid.cellTraversal(startingCell, &rayTmin, &rayTmax, stepX, stepY, stepZ);
+		intersectionCell = _grid.cellTraversal(startingCell, &tMax, &rayTmin, &rayTmax, stepX, stepY, stepZ);
 		// compute closest intersection inside the grid
 		closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
-		intersectionCell = _grid.cellTraversal(intersectionCell, &rayTmin, &rayTmax, stepX, stepY, stepZ);	
-		// comparar aqui
-//		closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);			
+		while(Ti > tMax) {
+			intersectionCell = _grid.cellTraversal(intersectionCell, &tMax, &rayTmin, &rayTmax, stepX, stepY, stepZ);	
+			closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
+		}
 	} 
 	return closestObject;
 }

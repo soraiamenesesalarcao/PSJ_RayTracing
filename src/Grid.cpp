@@ -36,7 +36,7 @@ Cell * Grid::getStartingCell(Ray ray, glm::vec3 rayT) {
 	return getCell(cx, cy, cz);
 }
 
-Cell * Grid::cellTraversal(	Cell * startingCell, 
+Cell * Grid::cellTraversal(	Cell * startingCell, float * tMax,
 							glm::vec3 * rayTmin, glm::vec3 * rayTmax,
 							int stepX, int stepY, int stepZ) {
 	glm::vec3 rayDelta;
@@ -63,12 +63,14 @@ Cell * Grid::cellTraversal(	Cell * startingCell,
 				if(iX == _N.x)
 					return NULL;
 				rayTmax->x += rayDelta.x;
+				*tMax = rayTmax->x;
 			}
 			else {
 				iZ += stepZ;
 				if(iZ == _N.z)
 					return NULL;
 				rayTmax->z += rayDelta.z;
+				*tMax = rayTmax->z;
 			}
 		}
 		else {
@@ -77,12 +79,14 @@ Cell * Grid::cellTraversal(	Cell * startingCell,
 				if(iY == _N.y)
 					return NULL;
 				rayTmax->y += rayDelta.y;
+				*tMax = rayTmax->y;
 			}
 			else {
 				iZ += stepZ;
 				if(iZ == _N.z)
 					return NULL;
 				rayTmax->z += rayDelta.z;
+				*tMax = rayTmax->z;
 			}
 		}
 		// TODO extra comp

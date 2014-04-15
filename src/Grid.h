@@ -17,7 +17,7 @@ class Grid {
 
 		Cell * getCell(int x, int y, int z);
 		Cell * getStartingCell(Ray ray, glm::vec3 rayT);
-		Cell * cellTraversal(	Cell * startingCell, 
+		Cell * cellTraversal(	Cell * startingCell, float * tMax,
 								glm::vec3 * rayTmin, glm::vec3 * rayTmax,
 								int stepX, int stepY, int stepZ);
 
