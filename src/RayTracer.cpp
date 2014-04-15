@@ -162,6 +162,8 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 	glm::vec3 closestPi, closestNormal;
 	float tempTi, closestTi = FLT_MAX;
 
+
+
 	for(std::size_t i = 0; i < objects.size(); i++){
 		hasIntersectedLocal = objects[i]->intersect(&closestPi, &tempTi, &closestNormal, ray);
 		if(hasIntersectedLocal) {
@@ -204,21 +206,40 @@ Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::ve
 		// - the one where the ray enters the grid
 
 		// 4) tMaxX, tMaxY = ray->box intersection
-		startingCell = _grid.getStartingCell(ray, rayTmin);
-				
 
-		// 3) if ray.direction.x < 0 => stepX = -1 else stepX = 1; same for y
+		//std::cout << "entrei " << std::endl;
+
+		startingCell = _grid.getStartingCell(ray, rayTmin);
+
+		//std::cout << "passei  " << std::endl;
+		//std::cout << "cell index [" << startingCell->getX() << " " << startingCell->getY() << " " << startingCell->getZ() << " ]" << std::endl; // ta maleee
+		
+		//std::cout << "startingCell : " << startingCell->getX() << std::endl;
+		//std::cout << "ray o.x " << ray.getDirection().x << std::endl;
+
+		
+
+		// 3) if ray.direction.x < 0 => stepX = -1 else stepX = 1; same for y and z
 		stepX = (ray.getDirection().x >= 0) ? 1 : -1;
 		stepY = (ray.getDirection().y >= 0) ? 1 : -1;
 		stepZ = (ray.getDirection().z >= 0) ? 1 : -1;
 
 		// 2), 5) and 6)
 		intersectionCell = _grid.cellTraversal(startingCell, &tMax, &rayTmin, &rayTmax, stepX, stepY, stepZ);
+
 		// compute closest intersection inside the grid
-		closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
-		while(Ti > tMax) {
-			intersectionCell = _grid.cellTraversal(intersectionCell, &tMax, &rayTmin, &rayTmax, stepX, stepY, stepZ);	
+
+		if(intersectionCell != NULL)
 			closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
+
+		
+
+		while(Ti == NULL || (Ti != NULL && Ti > tMax)) { // infinito?
+			intersectionCell = _grid.cellTraversal(intersectionCell, &tMax, &rayTmin, &rayTmax, stepX, stepY, stepZ);
+			if(intersectionCell != NULL)
+				closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
+			if(rayTmax.x >= _grid.getBoundingBox().getPosMax().x)
+				break;
 		}
 	} 
 	return closestObject;

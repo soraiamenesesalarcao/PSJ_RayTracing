@@ -26,7 +26,7 @@ void Scene::init() {
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
 	 _antiAliased = false;
-	 _usingThreads = true;
+	 _usingThreads = false;
 }
 
 void Scene::draw() {

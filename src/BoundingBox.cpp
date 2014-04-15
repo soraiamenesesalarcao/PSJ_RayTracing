@@ -29,7 +29,7 @@ bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax) {
 	invertedDirection.y = 1 / ray.getDirection().y;
 	invertedDirection.z = 1 / ray.getDirection().z;
 
-	if (ray.getDirection().x >= 0) {
+	if (invertedDirection.x >= 0) {
 		tMinX = (_posMin.x - ray.getOrigin().x) * invertedDirection.x;   // <=>  / ray.getDirection().x;
 		tMaxX = (_posMax.x - ray.getOrigin().x) * invertedDirection.x;
 	}
@@ -38,7 +38,7 @@ bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax) {
 		tMaxX = (_posMin.x - ray.getOrigin().x) * invertedDirection.x;		
 	}
 
-	if (ray.getDirection().y >= 0) {
+	if (invertedDirection.y >= 0) {
 		tMinY = (_posMin.y - ray.getOrigin().y) * invertedDirection.y;   // <=>  / ray.getDirection().y;
 		tMaxY = (_posMax.y - ray.getOrigin().y) * invertedDirection.y;
 	}
@@ -55,7 +55,7 @@ bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax) {
     if (tMaxY < tMaxX)
         tMaxX = tMaxY;
 
-	if (ray.getDirection().z >= 0) {
+	if (invertedDirection.z >= 0) {
 		tMinZ = (_posMin.z - ray.getOrigin().z) * invertedDirection.z;   // <=>  / ray.getDirection().z;
 		tMaxZ = (_posMax.z - ray.getOrigin().z) * invertedDirection.z;
 	}
