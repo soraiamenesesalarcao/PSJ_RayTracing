@@ -5,6 +5,12 @@ RayTracer::RayTracer() {
 }
 
 RayTracer::~RayTracer() {
+	
+}
+
+void RayTracer::init(std::vector<Object*> objects) {
+	_grid.computeBoundingBoxes(objects);
+	_grid.addObjectsToGrid(objects);
 }
 
 
@@ -16,9 +22,17 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 	glm::vec3 closestPi, closestNormal;
 	float closestTi;
 	glm::vec2 lightAttenuation(0.06f, 0.06f);
+	Object* objectIntersect; 
 
 	//determina a interseccao mais proxima com um objeto
-	Object* objectIntersect = closestIntersection(objects, closestPi, closestTi, closestNormal, ray);
+	if(_usingGrid) {
+		objectIntersect = closestIntersectionGrid(objects, closestPi, closestTi, closestNormal, ray);
+		//std::cout << "[Grid] Objecto " << objectIntersect->getMaterial().getColor().r << std::endl;
+	}
+	else {
+		objectIntersect = closestIntersection(objects, closestPi, closestTi, closestNormal, ray);
+	}
+
 	if(objectIntersect == NULL){
 		color.r = background->r; color.g = background->g; color.b = background->b;
 	} 
@@ -179,10 +193,9 @@ Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::ve
 	float tMax;
 	Cell * startingCell, * intersectionCell;
 	int stepX, stepY, stepZ;
-	bool hasIntersectedGrid = false;
-
 	// Check if the ray intersects the Grid's BB
-	hasIntersectedGrid = _grid.getBoundingBox().intersect(ray, &rayTmin, &rayTmax);
+	bool hasIntersectedGrid = _grid.getBoundingBox().intersect(ray, &rayTmin, &rayTmax);
+
 	if(hasIntersectedGrid) {
 		
 		// 1) take the starting cell:

@@ -22,7 +22,7 @@ Camera Scene::getCamera() {
 void Scene::init() {
 	_viewpoint = new Viewpoint();
 	_background = new RGB();
-	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _viewpoint);
+	ConfigLoader::loadSceneNFF("resources/balls_low2.nff", _background, &_lights, &_objects, _viewpoint);
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
 	 _antiAliased = false;
@@ -84,6 +84,7 @@ void Scene::update() {
 		_needToDraw = true;
 		std::cout << "Vai redesenhar? " << _needToDraw << std::endl;
 		_rt.toggleUsingGrid();
+		_rt.init(_objects);
 	}
 }
 

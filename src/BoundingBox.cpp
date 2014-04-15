@@ -25,9 +25,9 @@ bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax) {
 
 	// inverting ray's direction to avoid division by zero
 	glm::vec3 invertedDirection;
-	invertedDirection.x = 1 /  ray.getDirection().x;
-	invertedDirection.y = 1 /  ray.getDirection().y;
-	invertedDirection.z = 1 /  ray.getDirection().z;
+	invertedDirection.x = 1 / ray.getDirection().x;
+	invertedDirection.y = 1 / ray.getDirection().y;
+	invertedDirection.z = 1 / ray.getDirection().z;
 
 	if (ray.getDirection().x >= 0) {
 		tMinX = (_posMin.x - ray.getOrigin().x) * invertedDirection.x;   // <=>  / ray.getDirection().x;

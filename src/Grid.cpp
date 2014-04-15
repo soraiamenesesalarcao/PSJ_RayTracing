@@ -89,7 +89,6 @@ Cell * Grid::cellTraversal(	Cell * startingCell, float * tMax,
 				*tMax = rayTmax->z;
 			}
 		}
-		// TODO extra comp
 		intersectedCell = getCell(iX, iY, iZ);
 	}	
 	return intersectedCell;
