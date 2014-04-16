@@ -1,19 +1,5 @@
 #include "Cell.h"
 
-//Cell::Cell(int index) {
-//	_index = index;
-//}
-//
-//int Cell::getIndex() {
-//	return _index;
-//}
-//
-//
-//void Cell::setIndex(int index) {
-//	_index = index;
-//}
-
-
 Cell::Cell(int x, int y, int z) {
 	_x = x;
 	_y = y;

@@ -17,28 +17,29 @@ Cell * Grid::getCell(int x, int y, int z) {
 }
 
 
-Cell * Grid::getStartingCell(Ray ray, glm::vec3 rayT) {
+Cell * Grid::getStartingCell(Ray ray, glm::vec3 iPoint) {
 	int cx, cy, cz;
+	glm::vec3 gbbMin = getBoundingBox().getPosMin();
+
+
 	if(	ray.getOrigin().x < _bb.getPosMin().x || ray.getOrigin().x > _bb.getPosMax().x
 		|| ray.getOrigin().y < _bb.getPosMin().y || ray.getOrigin().y > _bb.getPosMax().y
 		|| ray.getOrigin().z < _bb.getPosMin().z || ray.getOrigin().z > _bb.getPosMax().z) {
 
-			// compute adjacent voxel's coords
-			cx = (rayT.x * _N.x) / _W.x;
-			cy = (rayT.y * _N.y) / _W.y;
-			cz = (rayT.z * _N.z) / _W.z; 
+			// // the ray's origin is outside the grid's bb: compute adjacent voxel's coords
+			cx = glm::clamp(((iPoint.x - gbbMin.x) * _N.x) / _W.x, 0.0f, _N.x - 1);
+			cy = glm::clamp(((iPoint.y - gbbMin.y) * _N.y) / _W.y, 0.0f, _N.y - 1);
+			cz = glm::clamp(((iPoint.z - gbbMin.z) * _N.z) / _W.z, 0.0f, _N.z - 1);
 
-		//	std::cout << "grid N [" << _N.x << " " << _N.y << " " << _N.z << " ]" << std::endl; 
-		//	std::cout << "grid W [" << _W.x << " " << _W.y << " " << _W.z << " ]" << std::endl; 
-		//	std::cout << "cell index 1 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // nao ta fixe
+			std::cout << "cell index 1 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // parece fixe
 	}
-	else { // the ray's origin is in the grid
-		cx = (ray.getOrigin().x * _N.x) / _W.x;
-		cy = (ray.getOrigin().y * _N.y) / _W.y;
-		cz = (ray.getOrigin().z * _N.z) / _W.z;
-	//	std::cout << "cell index 2 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // nao ta fixe
-	}
+	else { // the ray's origin is inside the grid's bb
+		cx = glm::clamp(((ray.getOrigin().x - gbbMin.x) * _N.x) / _W.x, 0.0f, _N.x - 1);
+		cy = glm::clamp(((ray.getOrigin().y - gbbMin.y) * _N.y) / _W.y, 0.0f, _N.y - 1);
+		cz = glm::clamp(((ray.getOrigin().z - gbbMin.z) * _N.z) / _W.z, 0.0f, _N.z - 1);
 	
+		std::cout << "cell index 2 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // ainda nao sei
+	}	
 	return getCell(cx, cy, cz);
 }
 
@@ -60,7 +61,7 @@ Cell * Grid::cellTraversal(	Cell * startingCell, float * tMax,
 	rayDelta.y = (rayTmax->y - rayTmin->y) / _N.y;
 	rayDelta.z = (rayTmax->z - rayTmin->z) / _N.z;
 
-	//std::cout << "cell index [" << iX << " " << iY << " " << startingCell->getZ() << " ]" << std::endl; // ta maleeee
+//	std::cout << "cell index x [" << iX << " " << iY << " " << startingCell->getZ() << " ]" << std::endl; // nao sei
 
 	// 6) Incremental phase
 	intersectedCell = getCell(iX, iY, iZ);
@@ -123,8 +124,6 @@ void Grid::setCells(int nObjects, int multiplyFactor) {
 	_W.z= _bb.getPosMax().z - _bb.getPosMin().z;
 
 	float s = glm::pow((_W.x * _W.y * _W.z) / nObjects, 1.0f / 3.0f); // raiz cubica
-	//std::cout << "n: " << nObjects << std::endl;
-	//std::cout << "s: " << s << std::endl;
 	_N.x = glm::ceil(multiplyFactor * (_W.x / s));
 	_N.y = glm::ceil(multiplyFactor * (_W.y / s));
 	_N.z = glm::ceil(multiplyFactor * (_W.z / s));
@@ -136,7 +135,7 @@ void Grid::setCells(int nObjects, int multiplyFactor) {
 		for(y = 0; y < _N.y; y++) {
 			for(z = 0; z < _N.z; z++) {
 				index = x + _N.x * y + _N.x * _N.y * z;
-			//	std::cout << "cell index [" << x << " " << y << " " << z << " ]" << std::endl; // ta fixe
+				// std::cout << "cell index [" << x << " " << y << " " << z << " ]" << std::endl; // ta fixe
 				_cells[index] = new Cell(x, y, z);
 			}
 		}
@@ -169,10 +168,9 @@ void Grid::computeBoundingBoxes(std::vector<Object*> objects) {
 
 		pMax.x += EPSILON;
 		pMax.y += EPSILON;
-		pMax.z += EPSILON;
-
-		setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
+		pMax.z += EPSILON;		
 	}
+	setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
 }
 
 
@@ -202,6 +200,5 @@ void Grid::addObjectsToGrid(std::vector<Object*> objects) {
 				}
 			}
 		}
-
 	}	
 }

@@ -20,68 +20,53 @@ void BoundingBox::setPosMax(float x, float y, float z) {
 	_posMax = glm::vec3(x, y, z);
 }
 
-bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax) {
-	float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
+bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax, glm::vec3 * iPoint) {
+	// Kay and Kajiya algorithm
+	// 1) init
+	float tMinX, tMinY, tMinZ, tMaxX, tMaxY, tMaxZ, tDist = FLT_MAX, tProx = -FLT_MAX;
+	
+	// 2/3) the ray is parallel to the grid and is not inside it, which means it never intersects it
+	if((ray.getDirection().x == 0 &&  (ray.getOrigin().x < _posMin.x || ray.getOrigin().x > _posMax.x))
+		|| (ray.getDirection().y == 0 &&  (ray.getOrigin().y < _posMin.y || ray.getOrigin().y > _posMax.y))
+		|| (ray.getDirection().z == 0 &&  (ray.getOrigin().z < _posMin.z || ray.getOrigin().z > _posMax.z))) {
+			return false; 
+	}
 
-	// inverting ray's direction to avoid division by zero
+	// 4) calculate the intersecions
+
+	// inverting ray's direction to avoid division by zero 
+	// (will only happen if the ray is inside the grid)
 	glm::vec3 invertedDirection;
 	invertedDirection.x = 1 / ray.getDirection().x;
 	invertedDirection.y = 1 / ray.getDirection().y;
 	invertedDirection.z = 1 / ray.getDirection().z;
 
-	if (invertedDirection.x >= 0) {
-		tMinX = (_posMin.x - ray.getOrigin().x) * invertedDirection.x;   // <=>  / ray.getDirection().x;
-		tMaxX = (_posMax.x - ray.getOrigin().x) * invertedDirection.x;
-	}
-	else {
-		tMinX = (_posMax.x - ray.getOrigin().x) * invertedDirection.x;
-		tMaxX = (_posMin.x - ray.getOrigin().x) * invertedDirection.x;		
-	}
+	tMinX = (_posMin.x - ray.getOrigin().x) * invertedDirection.x;
+	tMinY = (_posMin.y - ray.getOrigin().y) * invertedDirection.y;
+	tMinZ = (_posMin.z - ray.getOrigin().z) * invertedDirection.z;
 
-	if (invertedDirection.y >= 0) {
-		tMinY = (_posMin.y - ray.getOrigin().y) * invertedDirection.y;   // <=>  / ray.getDirection().y;
-		tMaxY = (_posMax.y - ray.getOrigin().y) * invertedDirection.y;
-	}
-	else {
-		tMinY = (_posMax.y - ray.getOrigin().y) * invertedDirection.y;
-		tMaxY = (_posMin.y - ray.getOrigin().y) * invertedDirection.y;		
-	}
+	tMaxX = (_posMax.x - ray.getOrigin().x) * invertedDirection.x;
+	tMaxY = (_posMax.y - ray.getOrigin().y) * invertedDirection.y;
+	tMaxZ = (_posMax.z - ray.getOrigin().z) * invertedDirection.z;
 
-	if ((tMinX > tMaxY) || (tMinY > tMaxX))
-        return false;
+	tMin->x = std::min(tMinX, tMaxX);
+	tMin->y = std::min(tMinY, tMaxY);
+	tMin->z = std::min(tMinZ, tMaxZ);
 
-	if (tMinY > tMinX)
-        tMinX = tMinY;
-    if (tMaxY < tMaxX)
-        tMaxX = tMaxY;
+	tMax->x = std::max(tMinX, tMaxX);
+	tMax->y = std::max(tMinY, tMaxY);
+	tMax->z = std::max(tMinZ, tMaxZ);
+	
+	tProx = std::max(std::max(std::max(tMin->x, tMin->y), tMin->z), tProx);
+	tDist = std::min(std::min(std::min(tMax->x, tMax->y), tMax->z), tDist);
 
-	if (invertedDirection.z >= 0) {
-		tMinZ = (_posMin.z - ray.getOrigin().z) * invertedDirection.z;   // <=>  / ray.getDirection().z;
-		tMaxZ = (_posMax.z - ray.getOrigin().z) * invertedDirection.z;
-	}
-	else {
-		tMinZ = (_posMax.z - ray.getOrigin().z) * invertedDirection.z;
-		tMaxZ = (_posMin.z - ray.getOrigin().z) * invertedDirection.z;		
-	}
+	// 5/6) the ray does not intersect the box's planes or points in the opposite direction
+	if(tDist > tProx || tDist < 0)  
+		return false;
 
-	if ((tMinX > tMaxZ) || (tMinZ > tMaxX))
-        return false;
-
-	if (tMinZ > tMinX)
-        tMinX = tMinZ;
-    if (tMaxZ < tMaxX)
-        tMaxX = tMaxZ;
-
-	/*if (tmin > r.tmin) r.tmin = tmin;
-    if (tmax < r.tmax) r.tmax = tmax;*/
-
-	tMin->x = tMinX;
-	tMin->y = tMinY;
-	tMin->z = tMinZ;
-
-	tMax->x = tMaxX;
-	tMax->y = tMaxY;
-	tMax->z = tMaxZ;
-
+	// 7/8) the algorithm has found the intersections
+	iPoint->x = ray.getOrigin().x + tProx * ray.getDirection().x;
+	iPoint->y = ray.getOrigin().y + tProx * ray.getDirection().y;
+	iPoint->z = ray.getOrigin().z + tProx * ray.getDirection().z;
 	return true;
 }
