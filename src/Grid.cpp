@@ -31,14 +31,14 @@ Cell * Grid::getStartingCell(Ray ray, glm::vec3 iPoint) {
 			cy = glm::clamp(((iPoint.y - gbbMin.y) * _N.y) / _W.y, 0.0f, _N.y - 1);
 			cz = glm::clamp(((iPoint.z - gbbMin.z) * _N.z) / _W.z, 0.0f, _N.z - 1);
 
-			std::cout << "cell index 1 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // parece fixe
+			//std::cout << "cell index 1 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // parece fixe
 	}
 	else { // the ray's origin is inside the grid's bb
 		cx = glm::clamp(((ray.getOrigin().x - gbbMin.x) * _N.x) / _W.x, 0.0f, _N.x - 1);
 		cy = glm::clamp(((ray.getOrigin().y - gbbMin.y) * _N.y) / _W.y, 0.0f, _N.y - 1);
 		cz = glm::clamp(((ray.getOrigin().z - gbbMin.z) * _N.z) / _W.z, 0.0f, _N.z - 1);
 	
-		std::cout << "cell index 2 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // ainda nao sei
+		//std::cout << "cell index 2 [" << cx << " " << cy << " " << cz << " ]" << std::endl; // ainda nao sei
 	}	
 	return getCell(cx, cy, cz);
 }
