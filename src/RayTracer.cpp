@@ -27,7 +27,8 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 	//determina a interseccao mais proxima com um objeto
 	if(_usingGrid) {
 		objectIntersect = closestIntersectionGrid(objects, closestPi, closestTi, closestNormal, ray);
-		//std::cout << "[Grid] Objecto " << objectIntersect->getMaterial().getColor().r << std::endl;
+	//	if(objectIntersect != NULL)
+		//	std::cout << "[Grid] Objecto " << objectIntersect->getMaterial().getColor().r << std::endl;
 	}
 	else {
 		objectIntersect = closestIntersection(objects, closestPi, closestTi, closestNormal, ray);
@@ -220,9 +221,10 @@ Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::ve
 		// 2), 5) and 6)
 		tDist = std::min(std::min(std::min(rayTmax.x, rayTmax.y), rayTmax.z), tDist);
 
-		std::cout << "Passei 1" << std::endl;
+	//	std::cout << "Passei 1" << std::endl;
 		intersectionCell = _grid.cellTraversal(startingCell, &tDist, &rayTmin, &rayTmax, stepX, stepY, stepZ);
-		std::cout << "Passei 2" << std::endl;
+	//	if(intersectionCell != NULL) 
+	//		std::cout << "Passei 2" << std::endl;
 
 		// compute closest intersection inside the grid
 

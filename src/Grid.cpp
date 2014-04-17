@@ -61,25 +61,30 @@ Cell * Grid::cellTraversal(	Cell * startingCell, float * tMax,
 	rayDelta.y = (rayTmax->y - rayTmin->y) / _N.y;
 	rayDelta.z = (rayTmax->z - rayTmin->z) / _N.z;
 
-//	std::cout << "cell index x [" << iX << " " << iY << " " << startingCell->getZ() << " ]" << std::endl; // nao sei
+	//std::cout << "cell index x [" << iX << " " << iY << " " << iZ << " ]" << std::endl; // nao sei
 
 	// 6) Incremental phase
-	intersectedCell = getCell(iX, iY, iZ);
-	
+	intersectedCell = getCell(iX, iY, iZ);	
+	//std::cout << "ic1: " << intersectedCell->getX() << std::endl;
 
 	while(intersectedCell->isEmpty()) {
+				
 		if(rayTmax->x < rayTmax->y) {
 			if(rayTmax->x < rayTmax->z) {
 				iX += stepX;
-				if(iX == _N.x)
+				if(iX == _N.x || iX == -1) {
+			//		std::cout << "Vou ser null x" << std::endl;
 					return NULL;
+				}
 				rayTmax->x += rayDelta.x;
 				*tMax = rayTmax->x;
 			}
 			else {
 				iZ += stepZ;
-				if(iZ == _N.z)
+				if(iZ == _N.z || iZ == -1) {
+		//			std::cout << "Vou ser null z" << std::endl;
 					return NULL;
+				}
 				rayTmax->z += rayDelta.z;
 				*tMax = rayTmax->z;
 			}
@@ -87,20 +92,26 @@ Cell * Grid::cellTraversal(	Cell * startingCell, float * tMax,
 		else {
 			if(rayTmax->y < rayTmax->z) {
 				iY += stepY;
-				if(iY == _N.y)
+				if(iY == _N.y || iY == -1) {
+		//			std::cout << "Vou ser null y" << std::endl;
 					return NULL;
+				}
 				rayTmax->y += rayDelta.y;
 				*tMax = rayTmax->y;
 			}
 			else {
 				iZ += stepZ;
-				if(iZ == _N.z)
+				if(iZ == _N.z || iZ == -1) {
+			//		std::cout << "Vou ser null z" << std::endl;
 					return NULL;
+				}
 				rayTmax->z += rayDelta.z;
 				*tMax = rayTmax->z;
 			}
 		}
+	//	std::cout << "iX: " << iX << " iY: " << iY << " iZ: " << iZ << std::endl;
 		intersectedCell = getCell(iX, iY, iZ);
+	//	std::cout << "ic2: " << intersectedCell->getX() << std::endl;
 	}
 	return intersectedCell;
 }
