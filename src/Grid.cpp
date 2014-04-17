@@ -43,76 +43,72 @@ Cell * Grid::getStartingCell(Ray ray, glm::vec3 iPoint) {
 	return getCell(cx, cy, cz);
 }
 
-Cell * Grid::cellTraversal(	Cell * startingCell, float * tMax,
-							glm::vec3 * rayTmin, glm::vec3 * rayTmax,
+Cell * Grid::cellTraversal(	Cell * startingCell, float * tMax, float * Ti,
+							glm::vec3 rayDelta, glm::vec3 * rayMax,
 							int stepX, int stepY, int stepZ) {
-	glm::vec3 rayDelta;
+	
 	int iX, iY, iZ;
 	Cell * intersectedCell = NULL;
 	
-
+	//std::cout << "objects [" << startingCell->getObjects().size() << " ]" << std::endl;
+	
 	// 2) X = starting cell.x; Y = starting cell.y (indices)
 	iX = startingCell->getX();
 	iY = startingCell->getY();
 	iZ = startingCell->getZ();
 
-	// 5) tDeltaX, tDeltaY = remaining ray in the cell
-	rayDelta.x = (rayTmax->x - rayTmin->x) / _N.x;
-	rayDelta.y = (rayTmax->y - rayTmin->y) / _N.y;
-	rayDelta.z = (rayTmax->z - rayTmin->z) / _N.z;
-
-	//std::cout << "cell index x [" << iX << " " << iY << " " << iZ << " ]" << std::endl; // nao sei
+	//if(iX < (_N.x - 1) && iY < (_N.y - 1) && iZ < (_N.z - 1))
+	//	std::cout << "cell index x [" << iX << " " << iY << " " << iZ << " ]" << std::endl;
 
 	// 6) Incremental phase
 	intersectedCell = getCell(iX, iY, iZ);	
-	//std::cout << "ic1: " << intersectedCell->getX() << std::endl;
 
-	while(intersectedCell->isEmpty()) {
-				
-		if(rayTmax->x < rayTmax->y) {
-			if(rayTmax->x < rayTmax->z) {
+	do {		
+		if(rayMax->x < rayMax->y) {
+			if(rayMax->x < rayMax->z) {
 				iX += stepX;
 				if(iX == _N.x || iX == -1) {
-			//		std::cout << "Vou ser null x" << std::endl;
+				//	std::cout << "Vou ser null x" << std::endl;
 					return NULL;
 				}
-				rayTmax->x += rayDelta.x;
-				*tMax = rayTmax->x;
+				rayMax->x += rayDelta.x; 
+				*tMax = rayMax->x;
 			}
 			else {
 				iZ += stepZ;
 				if(iZ == _N.z || iZ == -1) {
-		//			std::cout << "Vou ser null z" << std::endl;
+				//	std::cout << "Vou ser null z" << std::endl;
 					return NULL;
 				}
-				rayTmax->z += rayDelta.z;
-				*tMax = rayTmax->z;
+				rayMax->z += rayDelta.z;
+				*tMax = rayMax->z;
 			}
 		}
 		else {
-			if(rayTmax->y < rayTmax->z) {
+			if(rayMax->y < rayMax->z) {
 				iY += stepY;
 				if(iY == _N.y || iY == -1) {
-		//			std::cout << "Vou ser null y" << std::endl;
+				//	std::cout << "Vou ser null y" << std::endl;
 					return NULL;
 				}
-				rayTmax->y += rayDelta.y;
-				*tMax = rayTmax->y;
+				rayMax->y += rayDelta.y;
+				*tMax = rayMax->y;
 			}
 			else {
 				iZ += stepZ;
 				if(iZ == _N.z || iZ == -1) {
-			//		std::cout << "Vou ser null z" << std::endl;
+				//	std::cout << "Vou ser null z" << std::endl;
 					return NULL;
 				}
-				rayTmax->z += rayDelta.z;
-				*tMax = rayTmax->z;
+				rayMax->z += rayDelta.z;
+				*tMax = rayMax->z;
 			}
-		}
+		} 
+		
 	//	std::cout << "iX: " << iX << " iY: " << iY << " iZ: " << iZ << std::endl;
 		intersectedCell = getCell(iX, iY, iZ);
-	//	std::cout << "ic2: " << intersectedCell->getX() << std::endl;
-	}
+		
+	} while((Ti != NULL && *Ti > *tMax) || intersectedCell->isEmpty());
 	return intersectedCell;
 }
 
@@ -171,16 +167,16 @@ void Grid::computeBoundingBoxes(std::vector<Object*> objects) {
 
 		pMax.x = std::max(objects[i]->getBoundingBox().getPosMax().x, pMax.x);
 		pMax.y = std::max(objects[i]->getBoundingBox().getPosMax().y, pMax.y);
-		pMax.z = std::max(objects[i]->getBoundingBox().getPosMax().z, pMax.z);	
-				
-		pMin.x -= EPSILON;
-		pMin.y -= EPSILON;
-		pMin.z -= EPSILON;
-
-		pMax.x += EPSILON;
-		pMax.y += EPSILON;
-		pMax.z += EPSILON;		
+		pMax.z = std::max(objects[i]->getBoundingBox().getPosMax().z, pMax.z);		
 	}
+
+	pMin.x -= EPSILON;
+	pMin.y -= EPSILON;
+	pMin.z -= EPSILON;
+
+	pMax.x += EPSILON;
+	pMax.y += EPSILON;
+	pMax.z += EPSILON;	
 	setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
 }
 
@@ -192,7 +188,8 @@ void Grid::addObjectsToGrid(std::vector<Object*> objects) {
 	gbbMin = getBoundingBox().getPosMin();
 	setCells(objects.size(), MULTIPLY_FACTOR);
 
-	for(std::size_t i = 1; i < objects.size(); i++){
+	for(std::size_t i = 0; i < objects.size(); i++){
+	//	std::cout << "objecto " << i << std::endl;
 		obbMin = objects[i]->getBoundingBox().getPosMin();
 		obbMax = objects[i]->getBoundingBox().getPosMax();
 		
@@ -203,11 +200,16 @@ void Grid::addObjectsToGrid(std::vector<Object*> objects) {
 		iMaxX = glm::clamp(((obbMax.x - gbbMin.x) * _N.x) / _W.x, 0.0f, _N.x - 1);
 		iMaxY = glm::clamp(((obbMax.y - gbbMin.y) * _N.y) / _W.y, 0.0f, _N.y - 1);
 		iMaxZ = glm::clamp(((obbMax.z - gbbMin.z) * _N.z) / _W.z, 0.0f, _N.z - 1);
-				
-		for(x = iMinX; x < iMaxX; x++) {
-			for(y = iMinY; y < iMaxY; y++) {
-				for(z = iMinZ; z < iMaxZ; z++) {
+		
+	//	std::cout << "imin: " << iMinX << " " << iMinY << " " << iMinZ << " " << " ]" << std::endl;
+	//	std::cout << "imax: " << iMaxX << " " << iMaxY << " " << iMaxZ << " " << " ]" << std::endl;
+		for(z = iMinZ; z <= iMaxZ; z++) {
+			for(y = iMinY; y <= iMaxY; y++) {
+				for(x = iMinX; x <= iMaxX; x++) {
 					getCell(x, y, z)->addObject(objects[i]);
+					if(!getCell(x, y, z)->isEmpty())
+						//std::cout << "vazia" << std::endl;
+						std::cout << "celula: [" << x << " " << y << " " << z << " ]" << std::endl;
 				}
 			}
 		}

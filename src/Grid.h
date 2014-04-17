@@ -17,8 +17,8 @@ class Grid {
 
 		Cell * getCell(int x, int y, int z);
 		Cell * getStartingCell(Ray ray, glm::vec3 iPoint);
-		Cell * cellTraversal(	Cell * startingCell, float * tMax,
-								glm::vec3 * rayTmin, glm::vec3 * rayTmax,
+		Cell * cellTraversal(	Cell * startingCell, float * tMax, float * Ti,
+								glm::vec3 rayDelta, glm::vec3 * rayMax,
 								int stepX, int stepY, int stepZ);
 
 		BoundingBox getBoundingBox();

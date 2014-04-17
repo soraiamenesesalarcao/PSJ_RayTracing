@@ -173,6 +173,8 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 				closestTi = tempTi;
 				Pi = closestPi;
 				Ti = closestTi;
+				if(_usingGrid)
+					std::cout << "Ti: " << Ti << std::endl;
 				normal = closestNormal;
 				hasIntersectedGlobal = true;
 			}
@@ -181,18 +183,22 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 				closestTi = tempTi;
 				Pi = closestPi;
 				Ti = closestTi;
+				if(_usingGrid)
+					std::cout << "Ti: " << Ti << std::endl;
 				normal = closestNormal;
 			}
 		}
+		
 	}
 	return closestObject;
 }
 
 
 Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::vec3 &Pi, float &Ti, glm::vec3 &normal, Ray ray){
-
+	
 	Object* closestObject = NULL;
-	glm::vec3 rayTmax, rayTmin, rayCellPoint;
+	glm::vec3 rayTmax, rayTmin, rayCellPoint, rayMax;
+	glm::vec3 rayDelta;
 	float tDist = FLT_MAX;
 	Cell * startingCell, * intersectionCell;
 	int stepX, stepY, stepZ;
@@ -210,35 +216,44 @@ Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::ve
 		
 		startingCell = _grid.getStartingCell(ray, rayCellPoint);
 
-		//std::cout << "cell index [" << startingCell->getX() << " " << startingCell->getY() << " " << startingCell->getZ() << " ]" << std::endl; // nao sei
+	//	std::cout << "objects << " << startingCell->getObjects().size() << std::endl;
+	//	std::cout << "cell index [" << startingCell->getX() << " " << startingCell->getY() << " " << startingCell->getZ() << " ]" << std::endl;
 
 		// 3) if ray.direction.x < 0 => stepX = -1 else stepX = 1; same for y and z
 		stepX = (ray.getDirection().x >= 0) ? 1 : -1;
 		stepY = (ray.getDirection().y >= 0) ? 1 : -1;
 		stepZ = (ray.getDirection().z >= 0) ? 1 : -1;
 
+		// 5) tDeltaX, tDeltaY = remaining ray in the cell
+		rayDelta.x = (rayTmax.x - rayTmin.x) / _grid.getN().x;
+		rayDelta.y = (rayTmax.y - rayTmin.y) / _grid.getN().y;
+		rayDelta.z = (rayTmax.z - rayTmin.z) / _grid.getN().z;
 
+		rayMax.x = 0;
+		rayMax.y = 0;
+		rayMax.z = 0;
+		
 		// 2), 5) and 6)
 		tDist = std::min(std::min(std::min(rayTmax.x, rayTmax.y), rayTmax.z), tDist);
 
-	//	std::cout << "Passei 1" << std::endl;
-		intersectionCell = _grid.cellTraversal(startingCell, &tDist, &rayTmin, &rayTmax, stepX, stepY, stepZ);
-	//	if(intersectionCell != NULL) 
-	//		std::cout << "Passei 2" << std::endl;
-
+		intersectionCell = _grid.cellTraversal(startingCell, &tDist, NULL, rayDelta, &rayMax, stepX, stepY, stepZ);
+	//	std::cout << "end of first traversal " << std::endl;
+		//std::cout << "objects << " << intersectionCell->getObjects().size() << std::endl;
+		
 		// compute closest intersection inside the grid
-
-		//if(intersectionCell != NULL)
-		//	closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
+		if(intersectionCell != NULL) {
 			
+	//		std::cout << "objects << " << intersectionCell->getObjects().size() << std::endl;
+			closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);	
+			if(closestObject != NULL) {
+				intersectionCell = _grid.cellTraversal(intersectionCell, &tDist, &Ti, rayDelta, &rayMax, stepX, stepY, stepZ);
+		//		std::cout << "end of second traversal " << std::endl;
 
-		//while(Ti == NULL || (Ti != NULL && Ti > tDist)) { // infinito?
-		//	intersectionCell = _grid.cellTraversal(intersectionCell, &tDist, &rayTmin, &rayTmax, stepX, stepY, stepZ);
-		//	if(intersectionCell != NULL)
-		//		closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);
-		//	if(rayTmax.x >= _grid.getBoundingBox().getPosMax().x)
-		//		break;
-		//}
+				if(intersectionCell != NULL) {
+					closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);					
+				}
+			}
+		}
 	} 
 	return closestObject;
 }
