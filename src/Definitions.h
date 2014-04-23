@@ -33,6 +33,9 @@
 #define THRESHOLD 0.3f
 #define MULTIPLY_FACTOR 2
 
+#define FOCAL_LENGHT 2.5f
+#define DEPTH_RAYS 4
+
 // Structure for representing a vertex of a polygon
 typedef struct {
     float vx;

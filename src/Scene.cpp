@@ -22,11 +22,12 @@ Camera Scene::getCamera() {
 void Scene::init() {
 	_viewpoint = new Viewpoint();
 	_background = new RGB();
-	ConfigLoader::loadSceneNFF("resources/balls_low2.nff", _background, &_lights, &_objects, _viewpoint);
+	ConfigLoader::loadSceneNFF("resources/mount_low.nff", _background, &_lights, &_objects, _viewpoint);
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
-	 _antiAliased = false;
-	 _usingThreads = false;
+	 _antiAliased = true;
+	 _usingThreads = true;
+	 _depthOfField = true;
 }
 
 void Scene::draw() {
@@ -53,9 +54,12 @@ void Scene::draw() {
 					Ray ray =  _camera.PrimaryRay(x, y);
 					_rt.incNRays();
 					ray.setRayID(_rt.getNRays());
-					color = _rt.trace(_background, _lights, _objects, &ray, 1, 1.0f, glm::normalize(_camera.computeV()));
+					if(_depthOfField){
+						color = _rt.depthOfField(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()), _camera);
+					} else
+						color = _rt.trace(_background, _lights, _objects, &ray, 1, 1.0f, glm::normalize(_camera.computeV()));
 				}
-				else color = monteCarlo(x, y, 1);
+				else color = _rt.monteCarlo(_camera, _background, _lights, _objects, x, y, 1);
 
 				image[(RES_X*y) + x] = color;
 			}
@@ -88,56 +92,4 @@ void Scene::update() {
 		_rt.toggleUsingGrid();
 		_rt.init(_objects);
 	}
-}
-
-
-/* Monte Carlo Sampling!!! */
-RGB Scene::monteCarlo(float x, float y, int depth){
-	RGB color;
-
-	glm::vec2 position[4];
-	float margin = 1.0f / (2.0f * depth); 
-	position[0] = glm::vec2(x+margin, y+margin); // top right
-	position[1] = glm::vec2(x-margin, y+margin); // top left
-	position[2] = glm::vec2(x-margin, y-margin); // bottom left
-	position[3] = glm::vec2(x+margin, y-margin); // bottom right
-
-	glm::vec3 colors[4];
-	colors[0] = glm::vec3(0.0f, 0.0f, 0.0f);
-	colors[1] = glm::vec3(0.0f, 0.0f, 0.0f);
-	colors[2] = glm::vec3(0.0f, 0.0f, 0.0f);
-	colors[3] = glm::vec3(0.0f, 0.0f, 0.0f);
-
-	// It starts by tracing four rays at the corners of each pixel
-	for(int i = 0; i < 4; i++){
-		Ray ray = _camera.PrimaryRay(position[i].x, position[i].y);
-		_rt.incNRays();
-		ray.setRayID(_rt.getNRays());
-		color = _rt.trace(_background, _lights, _objects, &ray, 1, 1.0f, glm::normalize(_camera.computeV()));
-		colors[i] = glm::vec3(color.r, color.g, color.b);
-	}
-
-	//If the colors are similar (check the threshold) then just use their average
-	for(int i = 0, j = 1; i < 4 ; i++, j++){
-
-		if(i == 3) j = 0;
-		float diff = glm::abs(colors[i].r - colors[j].r) + glm::abs(colors[i].g - colors[j].g) + glm::abs(colors[i].b - colors[j].b);
-		if( diff > THRESHOLD){ //different colors
-			if(depth < 4){
-				monteCarlo(position[i].x, position[i].y, depth+1);
-			}
-			break;
-		}
-	}
-
-	color.r = color.g = color.b = 0.0f;
-	for(int r = 0; r < 4; r++){
-		color.r += colors[r].x;
-		color.g += colors[r].y;
-		color.b += colors[r].z;
-	}
-
-	color.r /= 4; color.g /= 4; color.b /= 4;
-
-	return color;
 }

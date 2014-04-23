@@ -129,6 +129,15 @@ namespace ConfigLoader {
 						lstObjects->push_back(new Sphere(center, radius, material));
                     }
 
+					// Plane
+                    else if(splitedLine[0] == "pl"){
+						glm::vec3 point1 = glm::vec3(atof(splitedLine[1].c_str()), atof(splitedLine[2].c_str()), atof(splitedLine[3].c_str()));
+						glm::vec3 point2 = glm::vec3(atof(splitedLine[4].c_str()), atof(splitedLine[5].c_str()), atof(splitedLine[6].c_str()));
+						glm::vec3 point3 = glm::vec3(atof(splitedLine[7].c_str()), atof(splitedLine[8].c_str()), atof(splitedLine[9].c_str()));
+
+						lstObjects->push_back(new Plan(point1, point2, point3, material));
+                    }
+
                     // Polygon
                     else if(splitedLine[0] == "p"){
                         vert_polygon = atof(splitedLine[1].c_str());

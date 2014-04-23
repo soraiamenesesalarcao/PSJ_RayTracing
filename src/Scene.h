@@ -21,6 +21,7 @@ class Scene {
 		bool _needToDraw;
 		bool _antiAliased;
 		bool _usingThreads;
+		bool _depthOfField;
 		Scene();
 
 	public:
@@ -29,7 +30,5 @@ class Scene {
 		Camera getCamera();
 		void init();
 		void draw();
-		void update();
-		RGB monteCarlo(float x, float y, int depth);
-		
+		void update();		
 };

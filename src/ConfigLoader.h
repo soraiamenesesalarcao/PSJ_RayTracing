@@ -5,6 +5,7 @@
 #include "Object.h"
 #include "Sphere.h"
 #include "Polygon.h"
+#include "Plan.h"
 
 namespace ConfigLoader {
 

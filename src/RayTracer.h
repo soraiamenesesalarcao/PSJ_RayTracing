@@ -23,8 +23,11 @@ class RayTracer {
 		void clearNRays();
 		void init(std::vector<Object*> objects);
 		RGB trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, 
-					Ray * ray, int depth, float ior, glm::vec3 V);
+		Ray * ray, int depth, float ior, glm::vec3 V);
 		Object * cellTraversal(	Cell * startingCell, glm::vec3 rayDelta, glm::vec3 rayMax, Ray * ray);
 		Object* closestIntersection(std::vector<Object*> objects, Ray * ray);
 		void toggleUsingGrid();
+
+		RGB monteCarlo(Camera camera, RGB * background, std::vector<Light> lights, std::vector<Object*> objects, float x, float y, int depth);
+		RGB depthOfField(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior, glm::vec3 V, Camera camera);
 };

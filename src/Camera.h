@@ -31,5 +31,9 @@ class Camera {
 		Ray PrimaryRay(float x, float y);
 		void setResX(int w);
 		void setResY(int h);
-        void put();			
+        void put();	
+		
+		glm::vec3 getEye(){ return eye; }
+		glm::vec3 getXe(){ return xe; }
+		glm::vec3 getYe(){ return ye; }
 	};

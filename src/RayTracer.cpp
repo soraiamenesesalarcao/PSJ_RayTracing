@@ -212,8 +212,6 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 			}//end if(LdotN > 0)
 		}
 		
-		
-
 		color.r = diffuseR + specularR;
 		color.g = diffuseG + specularG;
 		color.b = diffuseB + specularB;
@@ -378,4 +376,96 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, Ray * ray){
 
 void RayTracer::toggleUsingGrid() {
 	_usingGrid = (_usingGrid) ? false : true;
+}
+
+/* Monte Carlo Sampling!!! */
+RGB RayTracer::monteCarlo(Camera camera, RGB * background, std::vector<Light> lights, std::vector<Object*> objects, float x, float y, int depth){
+	RGB color;
+
+	glm::vec2 position[4];
+	float margin = 1.0f / (2.0f * depth); 
+	position[0] = glm::vec2(x+margin, y+margin); // top right
+	position[1] = glm::vec2(x-margin, y+margin); // top left
+	position[2] = glm::vec2(x-margin, y-margin); // bottom left
+	position[3] = glm::vec2(x+margin, y-margin); // bottom right
+
+	glm::vec3 colors[4];
+	colors[0] = glm::vec3(0.0f, 0.0f, 0.0f);
+	colors[1] = glm::vec3(0.0f, 0.0f, 0.0f);
+	colors[2] = glm::vec3(0.0f, 0.0f, 0.0f);
+	colors[3] = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	// It starts by tracing four rays at the corners of each pixel
+	for(int i = 0; i < 4; i++){
+		Ray ray = camera.PrimaryRay(position[i].x, position[i].y);
+		//if(dof)
+			color = depthOfField(background, lights, objects, ray, 1, 1.0f, glm::normalize(camera.computeV()),camera);
+		//else
+			//color = trace(background, lights, objects, ray, 1, 1.0f, glm::normalize(camera.computeV()));
+		
+		colors[i] = glm::vec3(color.r, color.g, color.b);
+	}
+
+	//If the colors are similar (check the threshold) then just use their average
+	for(int i = 0, j = 1; i < 4 ; i++, j++){
+
+		if(i == 3) j = 0;
+		float diff = glm::abs(colors[i].r - colors[j].r) + glm::abs(colors[i].g - colors[j].g) + glm::abs(colors[i].b - colors[j].b);
+		if( diff > THRESHOLD){ //different colors
+			if(depth < 4){
+				monteCarlo(camera, background, lights, objects,position[i].x, position[i].y, depth+1);
+			}
+			break;
+		}
+	}
+
+	color.r = color.g = color.b = 0.0f;
+	for(int r = 0; r < 4; r++){
+		color.r += colors[r].x;
+		color.g += colors[r].y;
+		color.b += colors[r].z;
+	}
+
+	color.r /= 4; color.g /= 4; color.b /= 4;
+
+	return color;
+}
+
+/* Depth of Field*/
+RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior, glm::vec3 V, Camera camera){
+	RGB color;
+
+	glm::vec3 rayDirection = ray.getDirection();
+	glm::vec3 P = ray.getOrigin() + (float)FOCAL_LENGHT * rayDirection; //camera.getEye()
+
+	RGB colorT;
+
+	float r = 0.5f; //radius of disc
+	color.r = 0.0f; color.g = 0.0f; color.b = 0.0f;
+
+	for(int i = 0; i<DEPTH_RAYS; i++){
+		float du = (float)rand()/float(RAND_MAX + 1);
+		float dv = (float)rand()/float(RAND_MAX + 1);
+
+		// creating new camera position(or ray start using jittering) //camera.getEye()
+		glm::vec3 ls = ray.getOrigin() - (r / 2.0f)*camera.getXe() - (r / 2.0f)*camera.getYe() + r*(du)*camera.getXe() + r*(dv)*camera.getYe();
+
+		//glm::vec3 ls = camera.getEye() - camera.getXe()*du*r - camera.getYe()*dv*r;
+
+		glm::vec3 direction = glm::normalize(P - ls);
+
+		ray.setDirection(direction);
+		ray.setOrigin(ls);
+
+		colorT = trace(background, lights, objects, &ray, 1, 1.0f, V);
+		color.r += colorT.r;
+		color.g += colorT.g;
+		color.b += colorT.b;
+	}
+
+	color.r = color.r/((float) DEPTH_RAYS);
+	color.g = color.g/((float) DEPTH_RAYS);
+	color.b = color.b/((float) DEPTH_RAYS);
+
+	return color;
 }
