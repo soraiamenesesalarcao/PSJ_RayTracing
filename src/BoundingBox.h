@@ -15,5 +15,6 @@ class BoundingBox {
 		glm::vec3 getPosMax();
 		void setPosMin(float x, float y, float z);
 		void setPosMax(float x, float y, float z);
-		bool intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax, glm::vec3 * iPoint);		
+		bool intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax, 
+						float * tProx, float * tDist, glm::vec3 * iPoint);		
 };

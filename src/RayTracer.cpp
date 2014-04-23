@@ -2,59 +2,118 @@
 
 RayTracer::RayTracer() {
 	_usingGrid = false;
+	_nRays = 0;
 }
 
 RayTracer::~RayTracer() {
 	
 }
 
+int RayTracer::getNRays() {
+	return _nRays;
+}
+
+void RayTracer::incNRays() {
+	_nRays++;
+}
+
+void RayTracer::clearNRays() {
+	_nRays = 0;
+}
+
 void RayTracer::init(std::vector<Object*> objects) {
-	_grid.computeBoundingBoxes(objects);
-	_grid.addObjectsToGrid(objects);
+
+	if(_usingGrid) {
+		_grid.computeBoundingBoxes(objects);
+		_grid.addObjectsToGrid(objects);
+	}
+
+	for(std::size_t i = 0; i < objects.size(); i++){	
+		objects[i]->setLastRayID(0);
+	}
+	clearNRays();
 }
 
 
 /*Algoritmo ray tracing*/
-RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior, glm::vec3 V){
+RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, 
+						Ray * ray, int depth, float ior, glm::vec3 V){		
+	RGB color;	
+	glm::vec2 lightAttenuation(0.06f, 0.06f);
+
+	Object* objectIntersect = NULL;
 	
-	
-	RGB color;
+	Material objMaterial;
 	glm::vec3 closestPi, closestNormal;
 	float closestTi;
-	glm::vec2 lightAttenuation(0.06f, 0.06f);
-	Object* objectIntersect; 
 
 	//determina a interseccao mais proxima com um objeto
 	if(_usingGrid) {
-		objectIntersect = closestIntersectionGrid(objects, closestPi, closestTi, closestNormal, ray);
-	//	if(objectIntersect != NULL)
-		//	std::cout << "[Grid] Objecto " << objectIntersect->getMaterial().getColor().r << std::endl;
+		Cell * startingCell;
+		glm::vec3 rayTmax, rayTmin, rayCellPoint, rayMax;
+		glm::vec3 rayDelta;
+		float tDist = FLT_MAX, tProx = -FLT_MAX;
+		bool hasIntersectedGrid;
+	
+		// Check if the ray intersects the Grid's BB
+		hasIntersectedGrid = _grid.getBoundingBox().intersect(*ray, &rayTmin, &rayTmax, &tProx, &tDist, &rayCellPoint);
+
+		if(hasIntersectedGrid) {
+
+			startingCell = _grid.getStartingCell(*ray, rayCellPoint);
+
+			rayDelta.x = (rayTmax.x - rayTmin.x) / _grid.getN().x;
+			rayDelta.y = (rayTmax.y - rayTmin.y) / _grid.getN().y;
+			rayDelta.z = (rayTmax.z - rayTmin.z) / _grid.getN().z;
+
+			rayMax.x = (ray->getDirection().x >= 0)	? (rayTmin.x + (startingCell->getX() + 1) * rayDelta.x) 
+													: (rayTmax.x - (startingCell->getX()) * rayDelta.x);
+
+			rayMax.y = (ray->getDirection().y >= 0)	? (rayTmin.y + (startingCell->getY() + 1) * rayDelta.y)
+													: (rayTmax.y - (startingCell->getY()) * rayDelta.y);
+
+			rayMax.z = (ray->getDirection().z >= 0)	? (rayTmin.z + (startingCell->getZ() + 1) * rayDelta.z)
+													: (rayTmax.z - (startingCell->getZ()) * rayDelta.z);
+
+			objectIntersect = cellTraversal(startingCell, rayDelta, rayMax, ray);
+		} 
 	}
 	else {
-		objectIntersect = closestIntersection(objects, closestPi, closestTi, closestNormal, ray);
+		objectIntersect = closestIntersection(objects, ray);
 	}
 
 	if(objectIntersect == NULL){
 		color.r = background->r; color.g = background->g; color.b = background->b;
 	} 
 	else {
+		objMaterial = ray->getWinnerMaterial();
+		closestPi = ray->getWinnerPi();
+		closestTi = ray->getWinnerTi();
+		closestNormal = ray->getWinnerNormal();
+
 		float diffuseR = 0, diffuseG = 0, diffuseB = 0;
 		float specularR = 0, specularG = 0, specularB = 0;
 		float newLightR = 0, newLightG = 0, newLightB = 0, gridLightR, gridLightG, gridLightB;
 		glm::vec3 L, R, N, Vt, newLightPosition, newL, newOrigin;
-  
+ 
 		N = glm::normalize(closestNormal);
 
+		glm::vec3 aux;
+		float auxT;
+		
 		for(std::size_t l = 0; l < lights.size(); l++){
-
+			
 			newLightR = 0.0;
 			newLightG = 0.0;
 			newLightB = 0.0;
+
 			//Vector unitario na direccao do point para a posicao da luz;
 			L = glm::normalize(lights[l].getPosition() - closestPi);
 
 			//inicializacao do shadow feeler
 			Ray shadowFeeler;
+			incNRays();
+			shadowFeeler.setRayID(getNRays());
 	
 			//vector reflexao especular
 			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
@@ -66,7 +125,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 			gridLightG = lights[l].getColor().g / (LIGHT_SIDE * LIGHT_SIDE);
 			gridLightB = lights[l].getColor().b / (LIGHT_SIDE * LIGHT_SIDE);
 
-			if(LdotN > 0) {	
+			if(LdotN > 0) {					
 
 				for(int x = 0; x < LIGHT_SIDE; x++) {
 					for(int y = 0; y < LIGHT_SIDE; y++) {
@@ -81,80 +140,201 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 
 						shadowFeeler.setOrigin(newOrigin);
 						shadowFeeler.setDirection(newL);
+						incNRays();
+						shadowFeeler.setRayID(getNRays());
 
 						// se intersecta com um shadow feeler
-						glm::vec3 aux;
-						float auxT;
-						if(closestIntersection(objects, aux, auxT, aux, shadowFeeler) != NULL) {
+
+						Object * object2 = NULL;
+
+						if(_usingGrid) {
+							glm::vec3 rayTmax, rayTmin, rayCellPoint, rayMax;
+							glm::vec3 rayDelta;
+							float tDist = FLT_MAX, tProx = -FLT_MAX;
+							bool hasIntersectedGrid;
+							Cell * startingCell;
+	
+							// Check if the ray intersects the Grid's BB
+							hasIntersectedGrid = _grid.getBoundingBox().intersect(shadowFeeler, &rayTmin, &rayTmax, &tProx, &tDist, &rayCellPoint);
+
+							if(hasIntersectedGrid) {
+
+								startingCell = _grid.getStartingCell(shadowFeeler, rayCellPoint);
+
+								rayDelta.x = (rayTmax.x - rayTmin.x) / _grid.getN().x;
+								rayDelta.y = (rayTmax.y - rayTmin.y) / _grid.getN().y;
+								rayDelta.z = (rayTmax.z - rayTmin.z) / _grid.getN().z;
+
+								rayMax.x = (shadowFeeler.getDirection().x >= 0)	? (rayTmin.x + (startingCell->getX() + 1) * rayDelta.x) 
+																		: (rayTmax.x - (startingCell->getX()) * rayDelta.x);
+
+								rayMax.y = (shadowFeeler.getDirection().y >= 0)	? (rayTmin.y + (startingCell->getY() + 1) * rayDelta.y)
+																		: (rayTmax.y - (startingCell->getY()) * rayDelta.y);
+
+								rayMax.z = (shadowFeeler.getDirection().z >= 0)	? (rayTmin.z + (startingCell->getZ() + 1) * rayDelta.z)
+																		: (rayTmax.z - (startingCell->getZ()) * rayDelta.z);
+
+								object2 = cellTraversal(startingCell, rayDelta, rayMax, &shadowFeeler);
+							} 
+						}
+						else {
+							object2 = closestIntersection(objects, &shadowFeeler);
+						}
+
+						if (object2 != NULL) {	
 							continue;					
 						}
+		
 						newLightR += gridLightR;
 						newLightG += gridLightG;
 						newLightB += gridLightB;
 					}
 				}
-
+				
 				attenuation = 1.0f / (1.0f + lightAttenuation.x * glm::length(closestPi - lights[l].getPosition()) 
 									       + lightAttenuation.y * pow(glm::length(closestPi -  lights[l].getPosition()), 
 										   2.0f));				
-				// Componente difusa
-				diffuseR += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().r * newLightR * LdotN;
-				diffuseG += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().g * newLightG * LdotN;
-				diffuseB += objectIntersect->getMaterial().getKd() * objectIntersect->getMaterial().getColor().b * newLightB * LdotN;
-
-				
+				// Componente difusa				
+				diffuseR += objMaterial.getKd() * objMaterial.getColor().r * newLightR * LdotN;				
+				diffuseG += objMaterial.getKd() * objMaterial.getColor().g * newLightG * LdotN;
+				diffuseB += objMaterial.getKd() * objMaterial.getColor().b * newLightB * LdotN;
 
 				//componente especular
 				float RdotL = std::max(glm::dot(R,L), 0.0f);
 				if(RdotL > 0){ 
-					specularR += objectIntersect->getMaterial().getKs() * objectIntersect->getMaterial().getColor().r * 
-									lights[l].getColor().r * glm::pow(RdotL, objectIntersect->getMaterial().getShine()) * attenuation;
-					specularG += objectIntersect->getMaterial().getKs() * objectIntersect->getMaterial().getColor().g * 
-									lights[l].getColor().g * glm::pow(RdotL, objectIntersect->getMaterial().getShine()) * attenuation;
-					specularB += objectIntersect->getMaterial().getKs() * objectIntersect->getMaterial().getColor().b * 
-									lights[l].getColor().b * glm::pow(RdotL, objectIntersect->getMaterial().getShine()) * attenuation;
+					specularR += objMaterial.getKs() * objMaterial.getColor().r * 
+									lights[l].getColor().r * glm::pow(RdotL, objMaterial.getShine()) * attenuation;
+					specularG += objMaterial.getKs() * objMaterial.getColor().g * 
+									lights[l].getColor().g * glm::pow(RdotL, objMaterial.getShine()) * attenuation;
+					specularB += objMaterial.getKs() * objMaterial.getColor().b * 
+									lights[l].getColor().b * glm::pow(RdotL, objMaterial.getShine()) * attenuation;
 				}
 			}//end if(LdotN > 0)
 		}
 		
+		
+
 		color.r = diffuseR + specularR;
 		color.g = diffuseG + specularG;
 		color.b = diffuseB + specularB;
 
 		// Compute the secondary rays
 		if(depth < MAX_DEPTH){
-
-			// Calculo da reflexao
-			if(objectIntersect->getMaterial().getKs() > 0){
+			// Reflection
+			if(objMaterial.getKs() > 0){
 				Ray reflectionRay;
 				reflectionRay.computeReflectedRay(closestPi, R);
-				RGB reflectionColor = trace(background, lights, objects, reflectionRay, depth + 1, ior, V);
-				color.r += reflectionColor.r * objectIntersect->getMaterial().getKs();
-				color.g += reflectionColor.g * objectIntersect->getMaterial().getKs();
-				color.b += reflectionColor.b * objectIntersect->getMaterial().getKs();
+				incNRays();
+				reflectionRay.setRayID(getNRays());
+				RGB reflectionColor = trace(background, lights, objects, &reflectionRay, depth + 1, ior, V);
+				color.r += reflectionColor.r * objMaterial.getKs();
+				color.g += reflectionColor.g * objMaterial.getKs();
+				color.b += reflectionColor.b * objMaterial.getKs();
 			}
 		
 			// Refraction
-			if(objectIntersect->getMaterial().getT() != 0) {
-				Vt = glm::dot(-ray.getDirection(), N) * N + ray.getDirection();
+			if(objMaterial.getT() != 0) {
+				Vt = glm::dot(-ray->getDirection(), N) * N + ray->getDirection();
 				float newIOR;
 				Ray refractionRay;
-				refractionRay.computeRefractedRay(closestPi, Vt, N, ior, objectIntersect->getMaterial().getIndexRefraction(), &newIOR);
+				refractionRay.computeRefractedRay(closestPi, Vt, N, ior, objMaterial.getIndexRefraction(), &newIOR);
+				incNRays();
+				refractionRay.setRayID(getNRays());
 				if(refractionRay.getOrigin().x != NULL) {
-					RGB refractionColor = trace(background, lights, objects, refractionRay, depth + 1, newIOR, V);
-					color.r += refractionColor.r * objectIntersect->getMaterial().getT();
-					color.g += refractionColor.g * objectIntersect->getMaterial().getT();
-					color.b += refractionColor.b * objectIntersect->getMaterial().getT();
+					RGB refractionColor = trace(background, lights, objects, &refractionRay, depth + 1, newIOR, V);
+					color.r += refractionColor.r * objMaterial.getT();
+					color.g += refractionColor.g * objMaterial.getT();
+					color.b += refractionColor.b * objMaterial.getT();
 				}
 			}
 
 		} //end if depth
 	}
-
+	
 	return color;
 }
 
-Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &Pi, float &Ti, glm::vec3 &normal, Ray ray){
+
+Object * RayTracer::cellTraversal (Cell * startingCell, glm::vec3 rayDelta, glm::vec3 rayMax, Ray * ray) {
+	
+	int iX, iY, iZ, stepX, stepY, stepZ, stopX, stopY, stopZ;
+	glm::vec3 rayDir = ray->getDirection();	
+	
+	Cell * intersectedCell = NULL;
+	Object * intersectedObject = NULL;
+	
+	iX = startingCell->getX();
+	iY = startingCell->getY();
+	iZ = startingCell->getZ();
+
+	stepX = (rayDir.x >= 0) ? 1 : -1;
+	stepY = (rayDir.y >= 0) ? 1 : -1;
+	stepZ = (rayDir.z >= 0) ? 1 : -1;
+
+	stopX = (rayDir.x >= 0) ? _grid.getN().x : -1;
+	stopY = (rayDir.y >= 0) ? _grid.getN().y : -1;
+	stopZ = (rayDir.z >= 0) ? _grid.getN().z : -1;
+
+	// Incremental phase
+	while(true) {
+
+		intersectedCell = _grid.getCell(iX, iY, iZ);
+
+		if(!intersectedCell->isEmpty()) {
+			std::vector<Object *> objs = intersectedCell->getObjects();
+			intersectedObject = closestIntersection(intersectedCell->getObjects(), ray);
+		}
+
+		if(rayMax.x < rayMax.y) {
+			if(rayMax.x < rayMax.z) {
+				if(intersectedObject != NULL && ray->getWinnerTi() < rayMax.x) { 
+					return intersectedObject;
+				}
+				iX += stepX;
+				if(iX == stopX) {
+					return NULL;
+				}
+				rayMax.x += rayDelta.x; 
+			}
+			else {
+				if(intersectedObject != NULL && ray->getWinnerTi() < rayMax.z) { 
+					return intersectedObject;
+				}
+				iZ += stepZ;
+				if(iZ == stopZ) {
+					return NULL;
+				}
+				rayMax.z += rayDelta.z;
+			}
+		}
+		else {
+			if(rayMax.y < rayMax.z) {
+
+				if(intersectedObject != NULL && ray->getWinnerTi() < rayMax.y) { 
+					return intersectedObject;
+				}
+				iY += stepY;
+				if(iY == stopY) {
+					return NULL;
+				}
+				rayMax.y += rayDelta.y;
+			}
+			else {
+				if(intersectedObject != NULL && ray->getWinnerTi() < rayMax.z) { 
+					return intersectedObject;
+				}
+				iZ += stepZ;
+				if(iZ == stopZ) {
+					return NULL;
+				}
+				rayMax.z += rayDelta.z;
+			}
+		} 
+	}
+}
+
+
+Object* RayTracer::closestIntersection(std::vector<Object*> objects, Ray * ray){
 	bool hasIntersectedGlobal = false;
 	bool hasIntersectedLocal = false;
 
@@ -163,98 +343,35 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, glm::vec3 &
 	glm::vec3 closestPi, closestNormal;
 	float tempTi, closestTi = FLT_MAX;
 
-
-
-	for(std::size_t i = 0; i < objects.size(); i++){
-		hasIntersectedLocal = objects[i]->intersect(&closestPi, &tempTi, &closestNormal, ray);
-		if(hasIntersectedLocal) {
-			if(!hasIntersectedGlobal) {
-				closestObject = objects[i];
-				closestTi = tempTi;
-				Pi = closestPi;
-				Ti = closestTi;
-				if(_usingGrid)
-					std::cout << "Ti: " << Ti << std::endl;
-				normal = closestNormal;
-				hasIntersectedGlobal = true;
-			}
-			if(tempTi < closestTi) {
-				closestObject = objects[i];
-				closestTi = tempTi;
-				Pi = closestPi;
-				Ti = closestTi;
-				if(_usingGrid)
-					std::cout << "Ti: " << Ti << std::endl;
-				normal = closestNormal;
-			}
-		}
+	for(std::size_t i = 0; i < objects.size(); i++){	
 		
-	}
-	return closestObject;
-}
+	// Verificacao para multiplas intersecoes entre o mesmo raio e o mesmo objecto
+	//	if(objects[i]->getLastRayID() == 0 || !ray->equalTo(objects[i]->getLastRayID())) {
 
+			hasIntersectedLocal = objects[i]->intersect(&closestPi, &tempTi, &closestNormal, *ray);		
 
-Object* RayTracer::closestIntersectionGrid(std::vector<Object*> objects, glm::vec3 &Pi, float &Ti, glm::vec3 &normal, Ray ray){
-	
-	Object* closestObject = NULL;
-	glm::vec3 rayTmax, rayTmin, rayCellPoint, rayMax;
-	glm::vec3 rayDelta;
-	float tDist = FLT_MAX;
-	Cell * startingCell, * intersectionCell;
-	int stepX, stepY, stepZ;
-	// Check if the ray intersects the Grid's BB
-	bool hasIntersectedGrid = _grid.getBoundingBox().intersect(ray, &rayTmin, &rayTmax, &rayCellPoint);
-	
-	if(hasIntersectedGrid) {
-		
-		// 1) take the starting cell:
-		// - the one where the ray origin is
-		// OR
-		// - the one where the ray enters the grid
-
-		// 4) tMaxX, tMaxY = ray->box intersection
-		
-		startingCell = _grid.getStartingCell(ray, rayCellPoint);
-
-	//	std::cout << "objects << " << startingCell->getObjects().size() << std::endl;
-	//	std::cout << "cell index [" << startingCell->getX() << " " << startingCell->getY() << " " << startingCell->getZ() << " ]" << std::endl;
-
-		// 3) if ray.direction.x < 0 => stepX = -1 else stepX = 1; same for y and z
-		stepX = (ray.getDirection().x >= 0) ? 1 : -1;
-		stepY = (ray.getDirection().y >= 0) ? 1 : -1;
-		stepZ = (ray.getDirection().z >= 0) ? 1 : -1;
-
-		// 5) tDeltaX, tDeltaY = remaining ray in the cell
-		rayDelta.x = (rayTmax.x - rayTmin.x) / _grid.getN().x;
-		rayDelta.y = (rayTmax.y - rayTmin.y) / _grid.getN().y;
-		rayDelta.z = (rayTmax.z - rayTmin.z) / _grid.getN().z;
-
-		rayMax.x = 0;
-		rayMax.y = 0;
-		rayMax.z = 0;
-		
-		// 2), 5) and 6)
-		tDist = std::min(std::min(std::min(rayTmax.x, rayTmax.y), rayTmax.z), tDist);
-
-		intersectionCell = _grid.cellTraversal(startingCell, &tDist, NULL, rayDelta, &rayMax, stepX, stepY, stepZ);
-	//	std::cout << "end of first traversal " << std::endl;
-		//std::cout << "objects << " << intersectionCell->getObjects().size() << std::endl;
-		
-		// compute closest intersection inside the grid
-		if(intersectionCell != NULL) {
-			
-	//		std::cout << "objects << " << intersectionCell->getObjects().size() << std::endl;
-			closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);	
-			if(closestObject != NULL) {
-				intersectionCell = _grid.cellTraversal(intersectionCell, &tDist, &Ti, rayDelta, &rayMax, stepX, stepY, stepZ);
-		//		std::cout << "end of second traversal " << std::endl;
-
-				if(intersectionCell != NULL) {
-					closestObject = closestIntersection(intersectionCell->getObjects(), Pi, Ti, normal, ray);					
+			if(hasIntersectedLocal) {
+				if(!hasIntersectedGlobal || (tempTi < closestTi)) {
+					closestTi = tempTi;
+					objects[i]->setLastRayID(ray->getRayID());
+					objects[i]->setLastTi(closestTi);
+					closestObject = objects[i];
+					hasIntersectedGlobal = true;
+					ray->setWinnerData(closestObject->getMaterial(), closestPi, closestNormal, closestTi);
 				}
 			}
-		}
-	} 
+
+		// Verificacao para multiplas intersecoes entre o mesmo raio e o mesmo objecto
+		/*}
+		else if (ray->equalTo(objects[i]->getLastRayID()) 
+			&& (!hasIntersectedGlobal || objects[i]->getLastTi() < closestTi)) {
+			hasIntersectedGlobal = true;			
+			closestTi = objects[i]->getLastTi();
+			closestObject = objects[i];
+			ray->setWinnerData(closestObject->getMaterial(), closestPi, closestNormal, closestTi);
+		}*/
+	}	
+
 	return closestObject;
 }
 

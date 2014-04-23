@@ -20,10 +20,10 @@ void BoundingBox::setPosMax(float x, float y, float z) {
 	_posMax = glm::vec3(x, y, z);
 }
 
-bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax, glm::vec3 * iPoint) {
+bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax, float * tProx, float * tDist, glm::vec3 * iPoint) {
 	// Kay and Kajiya algorithm
 	// 1) init
-	float tMinX, tMinY, tMinZ, tMaxX, tMaxY, tMaxZ, tDist = FLT_MAX, tProx = -FLT_MAX;
+	float tMinX, tMinY, tMinZ, tMaxX, tMaxY, tMaxZ;
 	
 	// 2/3) the ray is parallel to the grid and is not inside it, which means it never intersects it
 	if((ray.getDirection().x == 0 &&  (ray.getOrigin().x < _posMin.x || ray.getOrigin().x > _posMax.x))
@@ -56,17 +56,18 @@ bool BoundingBox::intersect(Ray ray, glm::vec3 * tMin, glm::vec3 * tMax, glm::ve
 	tMax->x = std::max(tMinX, tMaxX);
 	tMax->y = std::max(tMinY, tMaxY);
 	tMax->z = std::max(tMinZ, tMaxZ);
-	
-	tProx = std::max(std::max(std::max(tMin->x, tMin->y), tMin->z), tProx);
-	tDist = std::min(std::min(std::min(tMax->x, tMax->y), tMax->z), tDist);
+
+	*tProx = std::max(std::max(std::max(tMin->x, tMin->y), tMin->z), *tProx);
+	*tDist = std::min(std::min(std::min(tMax->x, tMax->y), tMax->z), *tDist);
 
 	// 5/6) the ray does not intersect the box's planes or points in the opposite direction
-	if(tDist > tProx || tDist < 0)  
+	if(*tDist < *tProx || *tDist < 0)  {
 		return false;
+	}
 
 	// 7/8) the algorithm has found the intersections
-	iPoint->x = ray.getOrigin().x + tProx * ray.getDirection().x;
-	iPoint->y = ray.getOrigin().y + tProx * ray.getDirection().y;
-	iPoint->z = ray.getOrigin().z + tProx * ray.getDirection().z;
+	iPoint->x = ray.getOrigin().x + *tProx * ray.getDirection().x;
+	iPoint->y = ray.getOrigin().y + *tProx * ray.getDirection().y;
+	iPoint->z = ray.getOrigin().z + *tProx * ray.getDirection().z;
 	return true;
 }

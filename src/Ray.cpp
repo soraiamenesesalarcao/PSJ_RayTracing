@@ -10,6 +10,37 @@ void Ray::setRayID(int ID) {
 	_rayID = ID;
 }
 
+bool Ray::equalTo(int ID) {
+	return ID == _rayID;
+}
+
+void Ray::setWinnerData(Material winnerMaterial, glm::vec3 winnerPi, glm::vec3 winnerNormal, float winnerTi) {
+	_winnerMaterial = winnerMaterial;
+	_winnerPi = winnerPi;
+	_winnerNormal = winnerNormal;
+	_winnerTi = winnerTi;
+}
+
+
+Material Ray::getWinnerMaterial() {
+	return _winnerMaterial;
+}
+
+
+glm::vec3 Ray::getWinnerPi() {
+	return _winnerPi;
+}
+
+
+glm::vec3 Ray::getWinnerNormal() {
+	return _winnerNormal;
+}
+
+
+float Ray::getWinnerTi() {
+	return _winnerTi;
+}
+
 
 glm::vec3 Ray::getOrigin() {
 	return _origin;

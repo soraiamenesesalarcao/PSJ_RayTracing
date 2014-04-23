@@ -6,7 +6,6 @@
 #include "RayTracer.h"
 #include "Object.h"
 #include "Light.h"
-#include "Plan.h"
 #include "Ray.h"
 #include "Input.h"
 

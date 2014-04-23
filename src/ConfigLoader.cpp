@@ -128,15 +128,6 @@ namespace ConfigLoader {
 						
 						lstObjects->push_back(new Sphere(center, radius, material));
                     }
-                    
-                    // Plane
-                    else if(splitedLine[0] == "pl"){
-						glm::vec3 point1 = glm::vec3(atof(splitedLine[1].c_str()), atof(splitedLine[2].c_str()), atof(splitedLine[3].c_str()));
-						glm::vec3 point2 = glm::vec3(atof(splitedLine[4].c_str()), atof(splitedLine[5].c_str()), atof(splitedLine[6].c_str()));
-						glm::vec3 point3 = glm::vec3(atof(splitedLine[7].c_str()), atof(splitedLine[8].c_str()), atof(splitedLine[9].c_str()));
-
-						lstObjects->push_back(new Plan(point1, point2, point3, material));
-                    }
 
                     // Polygon
                     else if(splitedLine[0] == "p"){
@@ -161,26 +152,20 @@ namespace ConfigLoader {
                     // Polygonal Patch
                     else if(splitedLine[0] == "pp"){
                         vert_polygon_patch = atof(splitedLine[1].c_str());
-						//polyPatch.vertices.clear();
+						vertices.clear();
                         continue;
                     }
-                    /*else if(vert_polygon_patch > 0){
+                    else if(vert_polygon_patch > 0){
 						v.vx = atof(splitedLine[0].c_str());
 						v.vy = atof(splitedLine[1].c_str());
 						v.vz = atof(splitedLine[2].c_str());
-						polyPatch.vertices.push_back(v);
-
-						norm.nx = atof(splitedLine[3].c_str());
-						norm.ny = atof(splitedLine[4].c_str());
-						norm.nz = atof(splitedLine[5].c_str());
-						polyPatch.normals.push_back(norm);
+						vertices.push_back(v);
 						
 						vert_polygon_patch--;
 						if(vert_polygon_patch == 0) {
-							polyPatch.mtl = m;
-							scene1->polygonPatchs.push_back(polyPatch);
+							lstObjects->push_back(new Polygon(vertices, material));
 						}
-                    }*/
+                    }
                 }
             }
         }

@@ -2,6 +2,7 @@
 
 #include "Definitions.h"
 #include "Cell.h"
+#include "Sphere.h"
 
 class Grid {
 	
@@ -17,9 +18,6 @@ class Grid {
 
 		Cell * getCell(int x, int y, int z);
 		Cell * getStartingCell(Ray ray, glm::vec3 iPoint);
-		Cell * cellTraversal(	Cell * startingCell, float * tMax, float * Ti,
-								glm::vec3 rayDelta, glm::vec3 * rayMax,
-								int stepX, int stepY, int stepZ);
 
 		BoundingBox getBoundingBox();
 		void setBoundingBox(float pMinX, float pMinY, float pMinZ,

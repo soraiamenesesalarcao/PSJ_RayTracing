@@ -16,7 +16,7 @@ void idle() {
 }
 
 void cleanup() {
-	std::cout << "Sou muito asseado" << std::endl;
+	std::cout << "Cleanup" << std::endl;
 	Scene::getInstance()->~Scene();
 }
 

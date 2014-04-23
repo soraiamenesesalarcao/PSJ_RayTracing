@@ -42,9 +42,6 @@
     <ClCompile Include="..\src\ConfigLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Plan.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\RayTracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -114,9 +111,6 @@
     </ClInclude>
     <ClInclude Include="..\src\ConfigLoader.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Plan.h">
-      <Filter>Header Files\Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\src\RayTracer.h">
       <Filter>Header Files</Filter>

@@ -3,6 +3,7 @@
 
 Object::Object(Material mtl){
 	_mtl = mtl;
+	_lastRayID = 0;
 }
 
 
@@ -23,4 +24,12 @@ int Object::getLastRayID() {
 
 void Object::setLastRayID(int ID) {
 	_lastRayID = ID;
+}
+
+float Object::getLastTi() {
+	return _lastTi;
+}
+
+void Object::setLastTi(float Ti) {
+	_lastTi = Ti;
 }

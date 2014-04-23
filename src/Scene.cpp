@@ -30,7 +30,7 @@ void Scene::init() {
 }
 
 void Scene::draw() {
-
+	
 	if(_needToDraw) {
 		time_t timer1, timer2;
 		int RES_X = _camera.GetResX();
@@ -40,7 +40,6 @@ void Scene::draw() {
 		std::vector<RGB> image = std::vector<RGB>(TOTAL);
 			
 		// Ray Tracing Calculation
-
 		time(&timer1);
 		int nCPU = _usingThreads ? omp_get_num_procs() : 1;
 		omp_set_num_threads(nCPU);
@@ -52,13 +51,16 @@ void Scene::draw() {
 				if(!_antiAliased) {
 					//determinar em WCS o raio primario que vai do centro de projecao ao pixel
 					Ray ray =  _camera.PrimaryRay(x, y);
-					color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()));
+					_rt.incNRays();
+					ray.setRayID(_rt.getNRays());
+					color = _rt.trace(_background, _lights, _objects, &ray, 1, 1.0f, glm::normalize(_camera.computeV()));
 				}
 				else color = monteCarlo(x, y, 1);
 
 				image[(RES_X*y) + x] = color;
 			}
 		}
+
 		time(&timer2);
 		float time = difftime(timer2, timer1);
 		std::cout << "Time spent Ray Tracing: " << time << " seconds" << std::endl;
@@ -109,7 +111,9 @@ RGB Scene::monteCarlo(float x, float y, int depth){
 	// It starts by tracing four rays at the corners of each pixel
 	for(int i = 0; i < 4; i++){
 		Ray ray = _camera.PrimaryRay(position[i].x, position[i].y);
-		color = _rt.trace(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()));
+		_rt.incNRays();
+		ray.setRayID(_rt.getNRays());
+		color = _rt.trace(_background, _lights, _objects, &ray, 1, 1.0f, glm::normalize(_camera.computeV()));
 		colors[i] = glm::vec3(color.r, color.g, color.b);
 	}
 

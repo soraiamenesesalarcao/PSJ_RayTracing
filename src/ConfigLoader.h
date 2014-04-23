@@ -3,7 +3,6 @@
 #include "Definitions.h"
 #include "Light.h"
 #include "Object.h"
-#include "Plan.h"
 #include "Sphere.h"
 #include "Polygon.h"
 
