@@ -133,6 +133,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 
 			if(LdotN > 0) {		
 
+				// Soft-shadows: if enabled, uses a square of LightSide x LightSide lights
 				for(int x = 0; x < LightSide; x++) {
 					for(int y = 0; y < LightSide; y++) {
 
@@ -187,6 +188,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 							object2 = closestIntersection(objects, &shadowFeeler);
 						}
 
+						// if a shadowfeeler has intersectedsomething, do not add illumination for that light
 						if (object2 != NULL) {	
 							continue;					
 						}
@@ -200,12 +202,12 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 				attenuation = 1.0f / (1.0f + lightAttenuation.x * glm::length(closestPi - lights[l].getPosition()) 
 									       + lightAttenuation.y * pow(glm::length(closestPi -  lights[l].getPosition()), 
 										   2.0f));				
-				// Componente difusa				
+				// Diffuse component				
 				diffuseR += objMaterial.getKd() * objMaterial.getColor().r * newLightR * LdotN;				
 				diffuseG += objMaterial.getKd() * objMaterial.getColor().g * newLightG * LdotN;
 				diffuseB += objMaterial.getKd() * objMaterial.getColor().b * newLightB * LdotN;
 
-				//componente especular
+				// Specular component
 				float RdotL = std::max(glm::dot(R,L), 0.0f);
 				if(RdotL > 0){ 
 					specularR += objMaterial.getKs() * objMaterial.getColor().r * 
@@ -215,15 +217,16 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 					specularB += objMaterial.getKs() * objMaterial.getColor().b * 
 									lights[l].getColor().b * glm::pow(RdotL, objMaterial.getShine()) * attenuation;
 				}
-			}//end if(LdotN > 0)
+			}
 		}
 		
 		color.r = diffuseR + specularR;
 		color.g = diffuseG + specularG;
 		color.b = diffuseB + specularB;
 
-		// Compute the secondary rays
+		// Secondary rays
 		if(depth < MAX_DEPTH){
+
 			// Reflection
 			if(objMaterial.getKs() > 0){
 				Ray reflectionRay;
@@ -252,7 +255,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 				}
 			}
 
-		} //end if depth
+		}
 	}
 	
 	return color;
@@ -349,7 +352,7 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, Ray * ray){
 
 	for(std::size_t i = 0; i < objects.size(); i++){	
 		
-	// Verificacao para multiplas intersecoes entre o mesmo raio e o mesmo objecto
+	// Multiple intersection avoidance - a bit bugged
 	//	if(objects[i]->getLastRayID() == 0 || !ray->equalTo(objects[i]->getLastRayID())) {
 
 			hasIntersectedLocal = objects[i]->intersect(&closestPi, &tempTi, &closestNormal, *ray);		
@@ -365,7 +368,7 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, Ray * ray){
 				}
 			}
 
-		// Verificacao para multiplas intersecoes entre o mesmo raio e o mesmo objecto
+		// Multiple intersection avoidance - a bit bugged
 		/*}
 		else if (ray->equalTo(objects[i]->getLastRayID()) 
 			&& (!hasIntersectedGlobal || objects[i]->getLastTi() < closestTi)) {
@@ -406,7 +409,7 @@ void RayTracer::setUsingDoF(bool dof) {
 	_usingDoF = dof;
 }
 
-/* Monte Carlo Sampling!!! */
+// Anti-aliasing: Monte Carlo Sampling 
 RGB RayTracer::monteCarlo(Camera camera, RGB * background, std::vector<Light> lights, std::vector<Object*> objects, float x, float y, int depth){
 	RGB color;
 
@@ -461,7 +464,7 @@ RGB RayTracer::monteCarlo(Camera camera, RGB * background, std::vector<Light> li
 	return color;
 }
 
-/* Depth of Field*/
+// Depth of Field
 RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray * ray, int depth, float ior, glm::vec3 V, Camera camera){
 	RGB color;
 
@@ -481,9 +484,6 @@ RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::ve
 
 		// creating new camera position(or ray start using jittering) //camera.getEye()
 		glm::vec3 ls = ray->getOrigin() - (r / 2.0f)*camera.getXe() - (r / 2.0f)*camera.getYe() + r*(du)*camera.getXe() + r*(dv)*camera.getYe();
-
-		//glm::vec3 ls = camera.getEye() - camera.getXe()*du*r - camera.getYe()*dv*r;
-
 		glm::vec3 direction = glm::normalize(P - ls);
 
 		ray->setDirection(direction);

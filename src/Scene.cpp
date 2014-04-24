@@ -22,6 +22,7 @@ Camera Scene::getCamera() {
 void Scene::init() {
 	_viewpoint = new Viewpoint();
 	_background = new RGB();
+	// Change the nff file
 	ConfigLoader::loadSceneNFF("resources/soraia2.nff", _background, &_lights, &_objects, _viewpoint);
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
@@ -43,15 +44,17 @@ void Scene::draw() {
 			
 		// Ray Tracing Calculation
 		time(&timer1);
+
+		// Set the threads (if enabled)
 		int nCPU = _usingThreads ? omp_get_num_procs() : 1;
 		omp_set_num_threads(nCPU);
-		#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))		
+		#pragma omp parallel for schedule(static, (RES_Y) / (nCPU * nCPU))
+
 		for (int y = 0; y < RES_Y; y++) {
 			for (int x = 0; x < RES_X; x++) {
 				RGB color;
 
-				if(!_antiAliased) {
-					//determinar em WCS o raio primario que vai do centro de projecao ao pixel
+				if(!_antiAliased) {				
 					Ray ray =  _camera.PrimaryRay(x, y);
 					_rt.incNRays();
 					ray.setRayID(_rt.getNRays());
@@ -77,7 +80,7 @@ void Scene::draw() {
 				glColor3f(image[(RES_X*y) + x].r, image[(RES_X*y) + x].g, image[(RES_X*y) + x].b);
 				glVertex2f(x, y);		
 			}
-			glEnd(); //fica muito mais rapido!!!
+			glEnd(); 
 			glFlush();
 		}
 
