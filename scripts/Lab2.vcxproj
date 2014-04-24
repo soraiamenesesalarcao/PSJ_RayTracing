@@ -102,10 +102,13 @@
     <None Include="resources\balls_high.nff" />
     <None Include="resources\balls_low.nff" />
     <None Include="resources\balls_medium.nff" />
+    <None Include="resources\car.nff" />
     <None Include="resources\jap.nff" />
     <None Include="resources\mount_high.nff" />
     <None Include="resources\mount_low.nff" />
     <None Include="resources\mount_very_high.nff" />
+    <None Include="resources\snake.nff" />
+    <None Include="resources\sphere.nff" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\BoundingBox.h" />

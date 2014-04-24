@@ -92,6 +92,15 @@
     <None Include="resources\balls_high.nff">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resources\car.nff">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\snake.nff">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\sphere.nff">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Definitions.h">
