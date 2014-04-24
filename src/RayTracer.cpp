@@ -375,7 +375,14 @@ Object* RayTracer::closestIntersection(std::vector<Object*> objects, Ray * ray){
 
 
 void RayTracer::toggleUsingGrid() {
-	_usingGrid = (_usingGrid) ? false : true;
+	if(_usingGrid) {
+		_usingGrid = false;
+		std::cout << "Grid desactivada" << std::endl;
+	}
+	else {
+		_usingGrid = true;
+		std::cout << "Grid activada" << std::endl;
+	}
 }
 
 void RayTracer::setUsingDoF(bool dof) {

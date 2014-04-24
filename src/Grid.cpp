@@ -136,9 +136,9 @@ void Grid::addObjectsToGrid(std::vector<Object*> objects) {
 			iMinX = 0;
 			iMinY = 0;
 			iMinZ = 0;
-			iMaxX = _N.x - 1;
-			iMaxY = _N.y - 1;
-			iMaxZ = _N.z - 1;
+			iMaxX = 0;
+			iMaxY = 0;
+			iMaxZ = 0;
 		}		
 		for(z = iMinZ; z <= iMaxZ; z++) {
 			for(y = iMinY; y <= iMaxY; y++) {

@@ -89,8 +89,41 @@ void Scene::draw() {
 void Scene::update() {
 	if(Input::getInstance()->keyWasReleased('G')) {		
 		_needToDraw = true;
-		std::cout << "Vai redesenhar? " << _needToDraw << std::endl;
 		_rt.toggleUsingGrid();
 		_rt.init(_objects);
+	}
+	if(Input::getInstance()->keyWasReleased('A')) {		
+		_needToDraw = true;
+		if(_antiAliased) {
+			_antiAliased = false;
+			std::cout << "Anti-aliasing desactivado" << std::endl;
+		}
+		else {
+			_antiAliased = true;
+			std::cout << "Anti-aliasing activado" << std::endl;
+		}
+	}
+	if(Input::getInstance()->keyWasReleased('D')) {		
+		_needToDraw = true;
+		if(_depthOfField) {
+			_depthOfField = false;
+			std::cout << "DoF desactivado" << std::endl;
+		}
+		else {
+			_depthOfField = true;
+			std::cout << "DoF activado" << std::endl;
+		}
+		_rt.setUsingDoF(_depthOfField);
+	}
+	if(Input::getInstance()->keyWasReleased('T')) {		
+		_needToDraw = true;
+		if(_usingThreads) {
+			_usingThreads = false;
+			std::cout << "Threads desactivadas" << std::endl;
+		}
+		else {
+			_usingThreads = true;
+			std::cout << "Threads activadas" << std::endl;
+		}
 	}
 }

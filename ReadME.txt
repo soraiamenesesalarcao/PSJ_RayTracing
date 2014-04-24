@@ -36,12 +36,19 @@ consiste na seguinte estutura de pastas:
 - projects
 	- <nome_do_projecto>
 		- scripts
-			--> aqui entram a pasta "resources" (onde devem ser colocados os 
-				ficheiros .nff) e ainda o ficheiro .vsproj
+			--> aqui entram a pasta "resources" (onde se encontram os ficheiros 
+				.nff) e ainda o ficheiro .vsproj
 		- src [pasta submetida]
 			--> aqui entra o código submetido na pasta src
 		- obj
 			--> Aqui entram os ficheiros de debug gerados pelo VS
+
+
+------------------------[ Interacção com a aplicação ]--------------------------
+
+Os comandos suportados pela aplicação são os seguintes:
+
+- G - Activar / desactivar a Regular Grid
 
 
 --------------------------------------------------------------------------------
@@ -49,8 +56,9 @@ consiste na seguinte estutura de pastas:
 -------------------[ Carregamento de ficheiros externos]------------------------
 
 A aplicação suporta a leitura de um ficheiro NFF que pode conter uma cor de fundo,
-uma câmara, fontes de luz, materiais e primitivas (esferas, cones, cilindros,
-planos, polígonos e patches de polígonos).
+uma câmara, fontes de luz, materiais e primitivas (esferas, planos, polígonos 
+e patches de polígonos).
+
 Sugere-se que os ficheiros externos a carregar sejam colocados numa pasta 
 "resources", incluída dentro da pasta onde se encontra o ficheiro .vsproj 
 (uma vez que é aí que se vai buscar o ficheiro .nff). A alteração explícita do 
