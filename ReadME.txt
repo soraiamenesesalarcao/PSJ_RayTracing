@@ -48,7 +48,11 @@ consiste na seguinte estutura de pastas:
 
 Os comandos suportados pela aplicação são os seguintes:
 
-- G - Activar / desactivar a Regular Grid
+- A - Activar / desactivar o anti-aliasing
+- S - Activar / desactivar as soft shadows
+- D - Activar / desactivar a depth of field
+- G - Activar / desactivar a regular grid
+- T - Activar / desactivar o uso de threads
 
 
 --------------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 
 RayTracer::RayTracer() {
 	_usingGrid = false;
+	_usingSoftShadows = true;
 	_nRays = 0;
 }
 
@@ -119,20 +120,25 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
 
 			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
-			float attenuation;
+			float attenuation, softening;
+			int LightSide = (_usingSoftShadows) ? LIGHT_SIDE : 1;
 
-			gridLightR = lights[l].getColor().r / (LIGHT_SIDE * LIGHT_SIDE);
-			gridLightG = lights[l].getColor().g / (LIGHT_SIDE * LIGHT_SIDE);
-			gridLightB = lights[l].getColor().b / (LIGHT_SIDE * LIGHT_SIDE);
+			gridLightR = lights[l].getColor().r / (LightSide * LightSide);
+			gridLightG = lights[l].getColor().g / (LightSide * LightSide);
+			gridLightB = lights[l].getColor().b / (LightSide * LightSide);
 
-			if(LdotN > 0) {					
+			if(LdotN > 0) {		
 
-				for(int x = 0; x < LIGHT_SIDE; x++) {
-					for(int y = 0; y < LIGHT_SIDE; y++) {
+				for(int x = 0; x < LightSide; x++) {
+					for(int y = 0; y < LightSide; y++) {
 
-						newLightPosition.x = lights[l].getPosition().x + x *  (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
+						softening = (_usingSoftShadows) ? (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO : 1;
+
+						//newLightPosition.x = lights[l].getPosition().x + x * (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
+						newLightPosition.x = lights[l].getPosition().x + x * softening;
 						newLightPosition.y = lights[l].getPosition().y;
-						newLightPosition.z = lights[l].getPosition().z + y *  (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
+						//newLightPosition.z = lights[l].getPosition().z + y * (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
+						newLightPosition.z = lights[l].getPosition().z + y * softening;
 
 						newL = glm::normalize(newLightPosition - closestPi);
 
@@ -382,6 +388,17 @@ void RayTracer::toggleUsingGrid() {
 	else {
 		_usingGrid = true;
 		std::cout << "Grid activada" << std::endl;
+	}
+}
+
+void RayTracer::toggleUsingSoftShadows() {
+	if(_usingSoftShadows) {
+		_usingSoftShadows = false;
+		std::cout << "Soft Shadows desactivadas" << std::endl;
+	}
+	else {
+		_usingSoftShadows = true;
+		std::cout << "Soft Shadows activadas" << std::endl;
 	}
 }
 

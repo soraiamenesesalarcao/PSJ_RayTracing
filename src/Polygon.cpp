@@ -31,7 +31,7 @@ bool Polygon::intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * normal
 
 	glm::vec3 N = glm::cross((v2 - v1), (v3 - v1));
 
-	// calcular o ponto de intersecao com o plano do poligono
+	// Compute ray-plan (which contains the polygon) intersection
 	float NdotD = glm::dot(N, ray.getDirection());
 	if(NdotD == 0){
 		return false;
@@ -42,10 +42,11 @@ bool Polygon::intersectPolygonAux(glm::vec3 * Pi, float * Ti, glm::vec3 * normal
 	float t = - (NdotO/ NdotD);
 	if(t < 0){
 		return false;
-	}	
+	}
+	// Compute intersection point
 	*Pi = ray.getOrigin() + ray.getDirection()*t;
 
-	// ver se o ponto de intersecao com o plano esta dentro do poligono
+	// Check if the intersection point above computed is part of the polygon
 	if (polygonContainsPoint(v1, v2,v3, N, *Pi)) {
 		*Ti = t;
 		*normal = glm::normalize(N);

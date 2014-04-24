@@ -15,7 +15,9 @@ class RayTracer {
 		Grid _grid;
 		bool _usingGrid;
 		bool _usingDoF;
-		int _nRays;
+		bool _usingSoftShadows;
+		int _nRays;		
+		
 	public:
 		RayTracer();
 		~RayTracer();
@@ -28,6 +30,7 @@ class RayTracer {
 		Object * cellTraversal(	Cell * startingCell, glm::vec3 rayDelta, glm::vec3 rayMax, Ray * ray);
 		Object* closestIntersection(std::vector<Object*> objects, Ray * ray);
 		void toggleUsingGrid();
+		void toggleUsingSoftShadows();
 		void setUsingDoF(bool dof);
 
 		RGB monteCarlo(Camera camera, RGB * background, std::vector<Light> lights, std::vector<Object*> objects, float x, float y, int depth);

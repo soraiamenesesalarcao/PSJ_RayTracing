@@ -10,12 +10,12 @@ void Plan::setBoundingBox(){
 	_bb = NULL;
 }
 
-/* Calculo da intersecao de um raio a um plano 
- * (ponto A, B, C)
- * 1 - calcular a normal ao plano --> N = AB x AC = (B - A) x (C - A)
- * 2 - calcular prod interno da normal e direccao do ray
- *     Se o resultado for 0 => a recta e' paralela ao plano => nao intersecta
- * 3 - calcular o t = - (N.origin / N.direction) 
+/* Ray-plan intersection
+ * (point A, B, C)
+ * 1 - Compute plan's normal --> N = AB x AC = (B - A) x (C - A)
+ * 2 - Compute dot product between normal and ray's direction
+ *     If equals 0 => ray is parallel to the plan => no intersection
+ * 3 - Compute t = - (N.origin / N.direction) 
  */
 bool Plan::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray){
 	glm::vec3 A = point_1; //glm::vec3(point_1.x, plan.point_1.y, plan.point_1.z);
@@ -35,7 +35,7 @@ bool Plan::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray){
 		return false;
 	}
 
-	// calcular o ponto de intersecao
+	// Compute intersection point
 	*Pi = ray.getOrigin() + ray.getDirection()*t;
 	*Ti = t;
 	*normal = glm::normalize(N);

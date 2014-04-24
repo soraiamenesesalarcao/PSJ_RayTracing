@@ -22,7 +22,7 @@ Camera Scene::getCamera() {
 void Scene::init() {
 	_viewpoint = new Viewpoint();
 	_background = new RGB();
-	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _viewpoint);
+	ConfigLoader::loadSceneNFF("resources/soraia2.nff", _background, &_lights, &_objects, _viewpoint);
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
 	 _antiAliased = false;
@@ -87,11 +87,18 @@ void Scene::draw() {
 }
 
 void Scene::update() {
+
 	if(Input::getInstance()->keyWasReleased('G')) {		
 		_needToDraw = true;
 		_rt.toggleUsingGrid();
 		_rt.init(_objects);
 	}
+
+	if(Input::getInstance()->keyWasReleased('S')) {		
+		_needToDraw = true;
+		_rt.toggleUsingSoftShadows();
+	}
+
 	if(Input::getInstance()->keyWasReleased('A')) {		
 		_needToDraw = true;
 		if(_antiAliased) {
@@ -103,6 +110,7 @@ void Scene::update() {
 			std::cout << "Anti-aliasing activado" << std::endl;
 		}
 	}
+
 	if(Input::getInstance()->keyWasReleased('D')) {		
 		_needToDraw = true;
 		if(_depthOfField) {
@@ -115,6 +123,7 @@ void Scene::update() {
 		}
 		_rt.setUsingDoF(_depthOfField);
 	}
+
 	if(Input::getInstance()->keyWasReleased('T')) {		
 		_needToDraw = true;
 		if(_usingThreads) {
