@@ -23,11 +23,11 @@ void Scene::init() {
 	_viewpoint = new Viewpoint();
 	_background = new RGB();
 	// Change the nff file
-	ConfigLoader::loadSceneNFF("resources/soraia2.nff", _background, &_lights, &_objects, _viewpoint);
+	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _viewpoint);
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
 	 _antiAliased = false;
-	 _usingThreads = false;
+	 _usingThreads = true;
 	 _depthOfField = false;
 	 _rt.setUsingDoF(_depthOfField);
 }
