@@ -6,6 +6,7 @@ Polygon::Polygon(std::vector<Vertex> vertices, Material mtl) : Object(mtl){
 }
 
 void Polygon::setBoundingBox(){
+	_bb = new BoundingBox();
 	float xMin = std::min(std::min(_vertices[0].vx, _vertices[1].vx), _vertices[2].vx);
 	float yMin = std::min(std::min(_vertices[0].vy, _vertices[1].vy), _vertices[2].vy);
 	float zMin = std::min(std::min(_vertices[0].vz, _vertices[1].vz), _vertices[2].vz);
@@ -14,8 +15,8 @@ void Polygon::setBoundingBox(){
 	float yMax = std::max(std::max(_vertices[0].vy, _vertices[1].vy), _vertices[2].vy);
 	float zMax = std::max(std::max(_vertices[0].vz, _vertices[1].vz), _vertices[2].vz);
 
-	_bb.setPosMin(xMin, yMin, zMin);
-	_bb.setPosMax(xMax, yMax, zMax);
+	_bb->setPosMin(xMin, yMin, zMin);
+	_bb->setPosMax(xMax, yMax, zMax);
 }
 
 bool Polygon::intersect(glm::vec3 * Pi, float * Ti, glm::vec3 * normal, Ray ray){

@@ -81,19 +81,22 @@ void Grid::computeBoundingBoxes(std::vector<Object*> objects) {
 
 	// init
 	objects[0]->setBoundingBox();
-	pMin = objects[0]->getBoundingBox().getPosMin();
-	pMax = objects[0]->getBoundingBox().getPosMax();
+	if(objects[0]->getBoundingBox() != NULL) {
+		pMin = objects[0]->getBoundingBox()->getPosMin();
+		pMax = objects[0]->getBoundingBox()->getPosMax();
+	}
 
 	for(std::size_t i = 1; i < objects.size(); i++){
 		objects[i]->setBoundingBox();
+		if(objects[i]->getBoundingBox() != NULL) {
+			pMin.x = std::min(objects[i]->getBoundingBox()->getPosMin().x, pMin.x);
+			pMin.y = std::min(objects[i]->getBoundingBox()->getPosMin().y, pMin.y);
+			pMin.z = std::min(objects[i]->getBoundingBox()->getPosMin().z, pMin.z);
 
-		pMin.x = std::min(objects[i]->getBoundingBox().getPosMin().x, pMin.x);
-		pMin.y = std::min(objects[i]->getBoundingBox().getPosMin().y, pMin.y);
-		pMin.z = std::min(objects[i]->getBoundingBox().getPosMin().z, pMin.z);
-
-		pMax.x = std::max(objects[i]->getBoundingBox().getPosMax().x, pMax.x);
-		pMax.y = std::max(objects[i]->getBoundingBox().getPosMax().y, pMax.y);
-		pMax.z = std::max(objects[i]->getBoundingBox().getPosMax().z, pMax.z);		
+			pMax.x = std::max(objects[i]->getBoundingBox()->getPosMax().x, pMax.x);
+			pMax.y = std::max(objects[i]->getBoundingBox()->getPosMax().y, pMax.y);
+			pMax.z = std::max(objects[i]->getBoundingBox()->getPosMax().z, pMax.z);
+		}
 	}
 
 	pMin.x -= EPSILON;
@@ -117,17 +120,26 @@ void Grid::addObjectsToGrid(std::vector<Object*> objects) {
 	setCells(objects.size(), MULTIPLY_FACTOR);	
 
 	for(std::size_t i = 0; i < objects.size(); i++){
-		obbMin = objects[i]->getBoundingBox().getPosMin();
-		obbMax = objects[i]->getBoundingBox().getPosMax();
-		
-		iMinX = glm::clamp((obbMin.x - gbbMin.x) * _N.x / _W.x, 0.0f, _N.x - 1);
-		iMinY = glm::clamp((obbMin.y - gbbMin.y) * _N.y / _W.y, 0.0f, _N.y - 1);
-		iMinZ = glm::clamp((obbMin.z - gbbMin.z) * _N.z / _W.z, 0.0f, _N.z - 1);
+		if(objects[i]->getBoundingBox() != NULL) {
+			obbMin = objects[i]->getBoundingBox()->getPosMin();
+			obbMax = objects[i]->getBoundingBox()->getPosMax();
 
-		iMaxX = glm::clamp((obbMax.x - gbbMin.x) * _N.x / _W.x, 0.0f, _N.x - 1);
-		iMaxY = glm::clamp((obbMax.y - gbbMin.y) * _N.y / _W.y, 0.0f, _N.y - 1);
-		iMaxZ = glm::clamp((obbMax.z - gbbMin.z) * _N.z / _W.z, 0.0f, _N.z - 1);
-		
+			iMinX = glm::clamp((obbMin.x - gbbMin.x) * _N.x / _W.x, 0.0f, _N.x - 1);
+			iMinY = glm::clamp((obbMin.y - gbbMin.y) * _N.y / _W.y, 0.0f, _N.y - 1);
+			iMinZ = glm::clamp((obbMin.z - gbbMin.z) * _N.z / _W.z, 0.0f, _N.z - 1);
+
+			iMaxX = glm::clamp((obbMax.x - gbbMin.x) * _N.x / _W.x, 0.0f, _N.x - 1);
+			iMaxY = glm::clamp((obbMax.y - gbbMin.y) * _N.y / _W.y, 0.0f, _N.y - 1);
+			iMaxZ = glm::clamp((obbMax.z - gbbMin.z) * _N.z / _W.z, 0.0f, _N.z - 1);
+		}
+		else {
+			iMinX = 0;
+			iMinY = 0;
+			iMinZ = 0;
+			iMaxX = _N.x - 1;
+			iMaxY = _N.y - 1;
+			iMaxZ = _N.z - 1;
+		}		
 		for(z = iMinZ; z <= iMaxZ; z++) {
 			for(y = iMinY; y <= iMaxY; y++) {
 				for(x = iMinX; x <= iMaxX; x++) {

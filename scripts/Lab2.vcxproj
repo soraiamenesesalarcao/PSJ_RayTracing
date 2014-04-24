@@ -91,6 +91,7 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\Material.cpp" />
     <ClCompile Include="..\src\Object.cpp" />
+    <ClCompile Include="..\src\Plan.cpp" />
     <ClCompile Include="..\src\Polygon.cpp" />
     <ClCompile Include="..\src\Ray.cpp" />
     <ClCompile Include="..\src\RayTracer.cpp" />
@@ -117,6 +118,7 @@
     <ClInclude Include="..\src\Light.h" />
     <ClInclude Include="..\src\Material.h" />
     <ClInclude Include="..\src\Object.h" />
+    <ClInclude Include="..\src\Plan.h" />
     <ClInclude Include="..\src\Polygon.h" />
     <ClInclude Include="..\src\Ray.h" />
     <ClInclude Include="..\src\RayTracer.h" />

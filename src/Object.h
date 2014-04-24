@@ -8,7 +8,7 @@ class Object{
 
 	protected:
 		Material _mtl;
-		BoundingBox _bb;
+		BoundingBox * _bb;
 		int _lastRayID;
 		float _lastTi;
 
@@ -16,7 +16,7 @@ class Object{
 		Object(Material mtl);
 		Material getMaterial();
 
-		BoundingBox getBoundingBox();
+		BoundingBox * getBoundingBox();
 		virtual void setBoundingBox() = 0;
 
 		int getLastRayID();

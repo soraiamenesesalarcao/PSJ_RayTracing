@@ -12,7 +12,7 @@ Material Object::getMaterial(){
 }
 
 
-BoundingBox Object::getBoundingBox() {
+BoundingBox * Object::getBoundingBox() {
 	return _bb;
 }
 

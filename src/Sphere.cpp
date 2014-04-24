@@ -6,8 +6,9 @@ Sphere::Sphere(glm::vec3 center, float radius, Material mtl): Object(mtl){
 }
 
 void Sphere::setBoundingBox(){
-	_bb.setPosMin(_center.x - _radius, _center.y - _radius, _center.z - _radius);
-	_bb.setPosMax(_center.x + _radius, _center.y + _radius, _center.z + _radius);
+	_bb = new BoundingBox();
+	_bb->setPosMin(_center.x - _radius, _center.y - _radius, _center.z - _radius);
+	_bb->setPosMax(_center.x + _radius, _center.y + _radius, _center.z + _radius);
 }
 
 /* Calculo da intersecao de um raio a uma esfera 

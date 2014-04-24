@@ -378,6 +378,10 @@ void RayTracer::toggleUsingGrid() {
 	_usingGrid = (_usingGrid) ? false : true;
 }
 
+void RayTracer::setUsingDoF(bool dof) {
+	_usingDoF = dof;
+}
+
 /* Monte Carlo Sampling!!! */
 RGB RayTracer::monteCarlo(Camera camera, RGB * background, std::vector<Light> lights, std::vector<Object*> objects, float x, float y, int depth){
 	RGB color;
@@ -398,10 +402,12 @@ RGB RayTracer::monteCarlo(Camera camera, RGB * background, std::vector<Light> li
 	// It starts by tracing four rays at the corners of each pixel
 	for(int i = 0; i < 4; i++){
 		Ray ray = camera.PrimaryRay(position[i].x, position[i].y);
-		//if(dof)
-			color = depthOfField(background, lights, objects, ray, 1, 1.0f, glm::normalize(camera.computeV()),camera);
-		//else
-			//color = trace(background, lights, objects, ray, 1, 1.0f, glm::normalize(camera.computeV()));
+		incNRays();
+		ray.setRayID(getNRays());
+		if(_usingDoF)
+			color = depthOfField(background, lights, objects, &ray, 1, 1.0f, glm::normalize(camera.computeV()),camera);
+		else
+			color = trace(background, lights, objects, &ray, 1, 1.0f, glm::normalize(camera.computeV()));
 		
 		colors[i] = glm::vec3(color.r, color.g, color.b);
 	}
@@ -432,11 +438,13 @@ RGB RayTracer::monteCarlo(Camera camera, RGB * background, std::vector<Light> li
 }
 
 /* Depth of Field*/
-RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray ray, int depth, float ior, glm::vec3 V, Camera camera){
+RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, Ray * ray, int depth, float ior, glm::vec3 V, Camera camera){
 	RGB color;
 
-	glm::vec3 rayDirection = ray.getDirection();
-	glm::vec3 P = ray.getOrigin() + (float)FOCAL_LENGHT * rayDirection; //camera.getEye()
+	glm::vec3 rayDirection = ray->getDirection();
+	incNRays();
+	ray->setRayID(getNRays());
+	glm::vec3 P = ray->getOrigin() + (float)FOCAL_LENGHT * rayDirection; //camera.getEye()
 
 	RGB colorT;
 
@@ -448,16 +456,16 @@ RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::ve
 		float dv = (float)rand()/float(RAND_MAX + 1);
 
 		// creating new camera position(or ray start using jittering) //camera.getEye()
-		glm::vec3 ls = ray.getOrigin() - (r / 2.0f)*camera.getXe() - (r / 2.0f)*camera.getYe() + r*(du)*camera.getXe() + r*(dv)*camera.getYe();
+		glm::vec3 ls = ray->getOrigin() - (r / 2.0f)*camera.getXe() - (r / 2.0f)*camera.getYe() + r*(du)*camera.getXe() + r*(dv)*camera.getYe();
 
 		//glm::vec3 ls = camera.getEye() - camera.getXe()*du*r - camera.getYe()*dv*r;
 
 		glm::vec3 direction = glm::normalize(P - ls);
 
-		ray.setDirection(direction);
-		ray.setOrigin(ls);
+		ray->setDirection(direction);
+		ray->setOrigin(ls);
 
-		colorT = trace(background, lights, objects, &ray, 1, 1.0f, V);
+		colorT = trace(background, lights, objects, ray, 1, 1.0f, V);
 		color.r += colorT.r;
 		color.g += colorT.g;
 		color.b += colorT.b;

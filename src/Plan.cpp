@@ -7,7 +7,7 @@ Plan::Plan(glm::vec3 point1, glm::vec3 point2, glm::vec3 point3, Material mtl) :
 }
 
 void Plan::setBoundingBox(){
-	
+	_bb = NULL;
 }
 
 /* Calculo da intersecao de um raio a um plano 

@@ -22,12 +22,13 @@ Camera Scene::getCamera() {
 void Scene::init() {
 	_viewpoint = new Viewpoint();
 	_background = new RGB();
-	ConfigLoader::loadSceneNFF("resources/mount_low.nff", _background, &_lights, &_objects, _viewpoint);
+	ConfigLoader::loadSceneNFF("resources/balls_low.nff", _background, &_lights, &_objects, _viewpoint);
 	 _camera.init(_viewpoint);
 	 _needToDraw = true;
-	 _antiAliased = true;
-	 _usingThreads = true;
-	 _depthOfField = true;
+	 _antiAliased = false;
+	 _usingThreads = false;
+	 _depthOfField = false;
+	 _rt.setUsingDoF(_depthOfField);
 }
 
 void Scene::draw() {
@@ -55,7 +56,7 @@ void Scene::draw() {
 					_rt.incNRays();
 					ray.setRayID(_rt.getNRays());
 					if(_depthOfField){
-						color = _rt.depthOfField(_background, _lights, _objects, ray, 1, 1.0f, glm::normalize(_camera.computeV()), _camera);
+						color = _rt.depthOfField(_background, _lights, _objects, &ray, 1, 1.0f, glm::normalize(_camera.computeV()), _camera);
 					} else
 						color = _rt.trace(_background, _lights, _objects, &ray, 1, 1.0f, glm::normalize(_camera.computeV()));
 				}
