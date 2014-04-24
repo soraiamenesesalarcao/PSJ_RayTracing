@@ -13,7 +13,7 @@ Material::Material(RGB color, float kd, float ks, float shine, float t, float in
 	_indexRefraction = indexRefraction;
 }
 
-// GETS
+
 float Material::getKd(){
 	return _kd;
 }
@@ -38,7 +38,7 @@ RGB Material::getColor(){
 	return _color;
 }
 
-// SETS
+
 void Material::setKd(float kd){
 	_kd = kd;
 }

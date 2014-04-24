@@ -49,16 +49,16 @@ void Camera::setResY(int h) {
 	_winWidth = h;
 }
 
-/* Calcula o raio primario
- * Recebe uma posicao de um pixel do viewport
+/* Primary ray calculation
+ * Input: a position of a viewport pixel
  *
- * Tem como origem o valor do eye
- * A direcao é calculada a partir de (de acordo com os slides):
+ * Ray origin: Camera Eye
+ * Ray direction:
  * u(x) = (x/ResX-1)w
  * v(y) = (y/ResY-1)h
  * direction = -df*ze + h((y/ResY-1) - 1/2)ye + w((x/ResX-1) - 1/2)xe =
  *			 = -df*ze + (v(y) - h/2)ye + (u(x) + w/2)xe
- * Direction tem que ser normalizada porque é uma direccao
+ * Direction vector must be normalized because it is a direction
  */
 Ray Camera::PrimaryRay(float x, float y) {
 	Ray ray;

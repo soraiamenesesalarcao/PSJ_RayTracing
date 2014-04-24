@@ -22,6 +22,8 @@ void RayTracer::clearNRays() {
 	_nRays = 0;
 }
 
+
+// Initialize grid's information (bb and objects)
 void RayTracer::init(std::vector<Object*> objects) {
 
 	if(_usingGrid) {
@@ -36,7 +38,7 @@ void RayTracer::init(std::vector<Object*> objects) {
 }
 
 
-/*Algoritmo ray tracing*/
+// Ray Tracing algorithm
 RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Object*> objects, 
 						Ray * ray, int depth, float ior, glm::vec3 V){		
 	RGB color;	
@@ -48,7 +50,7 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 	glm::vec3 closestPi, closestNormal;
 	float closestTi;
 
-	//determina a interseccao mais proxima com um objeto
+	// Determine the closest intersection (if any)
 	if(_usingGrid) {
 		Cell * startingCell;
 		glm::vec3 rayTmax, rayTmin, rayCellPoint, rayMax;
@@ -83,9 +85,11 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 		objectIntersect = closestIntersection(objects, ray);
 	}
 
+	// No intersection => background colour
 	if(objectIntersect == NULL){
 		color.r = background->r; color.g = background->g; color.b = background->b;
 	} 
+	// Intersection => compute illumination
 	else {
 		objMaterial = ray->getWinnerMaterial();
 		closestPi = ray->getWinnerPi();
@@ -108,18 +112,18 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 			newLightG = 0.0;
 			newLightB = 0.0;
 
-			//Vector unitario na direccao do point para a posicao da luz;
+			// Unit vector that points to the light position;
 			L = glm::normalize(lights[l].getPosition() - closestPi);
 
-			//inicializacao do shadow feeler
+			// Shadow feeler initialization
 			Ray shadowFeeler;
 			incNRays();
 			shadowFeeler.setRayID(getNRays());
 	
-			//vector reflexao especular
+			// Specular reflection vector
 			R = glm::normalize(2 * glm::dot(V, N) * N - V); 
 
-			float LdotN = std::max(glm::dot(L, N), 0.0f); //para o calculo do material
+			float LdotN = std::max(glm::dot(L, N), 0.0f); 
 			float attenuation, softening;
 			int LightSide = (_usingSoftShadows) ? LIGHT_SIDE : 1;
 
@@ -134,10 +138,8 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 
 						softening = (_usingSoftShadows) ? (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO : 1;
 
-						//newLightPosition.x = lights[l].getPosition().x + x * (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
 						newLightPosition.x = lights[l].getPosition().x + x * softening;
 						newLightPosition.y = lights[l].getPosition().y;
-						//newLightPosition.z = lights[l].getPosition().z + y * (rand() % 10) * LIGHT_EPSILON * LIGHT_GRID_RATIO;
 						newLightPosition.z = lights[l].getPosition().z + y * softening;
 
 						newL = glm::normalize(newLightPosition - closestPi);
@@ -149,10 +151,9 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 						incNRays();
 						shadowFeeler.setRayID(getNRays());
 
-						// se intersecta com um shadow feeler
-
 						Object * object2 = NULL;
 
+						// Check for shadowfeeler-objects intersecions
 						if(_usingGrid) {
 							glm::vec3 rayTmax, rayTmin, rayCellPoint, rayMax;
 							glm::vec3 rayDelta;
@@ -160,7 +161,6 @@ RGB RayTracer::trace(RGB * background, std::vector<Light> lights, std::vector<Ob
 							bool hasIntersectedGrid;
 							Cell * startingCell;
 	
-							// Check if the ray intersects the Grid's BB
 							hasIntersectedGrid = _grid.getBoundingBox().intersect(shadowFeeler, &rayTmin, &rayTmax, &tProx, &tDist, &rayCellPoint);
 
 							if(hasIntersectedGrid) {

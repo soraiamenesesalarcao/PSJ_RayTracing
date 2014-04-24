@@ -16,7 +16,7 @@ Cell * Grid::getCell(int x, int y, int z) {
 	return _cells[index];
 }
 
-
+// Get the cell where the ray intersects the grid's bounding box
 Cell * Grid::getStartingCell(Ray ray, glm::vec3 iPoint) {
 	int cx, cy, cz;
 	glm::vec3 gbbMin = getBoundingBox().getPosMin();
@@ -50,7 +50,7 @@ void Grid::setBoundingBox(	float pMinX, float pMinY, float pMinZ,
 	_bb.setPosMax(pMaxX, pMaxY, pMaxZ);
 }
 
-
+// Initialize grid's cells
 void Grid::setCells(int nObjects, int multiplyFactor) {
 	_W.x = _bb.getPosMax().x - _bb.getPosMin().x;
 	_W.y = _bb.getPosMax().y - _bb.getPosMin().y;
@@ -75,7 +75,7 @@ void Grid::setCells(int nObjects, int multiplyFactor) {
 	}
 }
 
-
+// Compute both the grid's bounding box and the objects's bounding box
 void Grid::computeBoundingBoxes(std::vector<Object*> objects) {
 	glm::vec3 pMin, pMax;
 
@@ -110,7 +110,7 @@ void Grid::computeBoundingBoxes(std::vector<Object*> objects) {
 	setBoundingBox(pMin.x, pMin.y, pMin.z, pMax.x, pMax.y, pMax.z);
 }
 
-
+// add the objects to each grid's cell
 void Grid::addObjectsToGrid(std::vector<Object*> objects) {
 	glm::vec3 obbMin, obbMax, gbbMin;
 	int iMinX, iMinY, iMinZ, iMaxX, iMaxY, iMaxZ, x, y, z;

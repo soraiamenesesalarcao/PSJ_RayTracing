@@ -38,6 +38,7 @@ void drawScene() {
 	Input::getInstance()->reset();
 }
 
+
 /* Input callbacks */
 
 void keyPressed(unsigned char key, int x, int y){
@@ -96,7 +97,7 @@ void setupGLUT(int argc, char* argv[]) {
 /* ************************************************************************** */
 
 void init(int argc, char* argv[]) {
-	 // ordem relevante
+	 // relevant order
 	Scene::getInstance()->init();
 	RES_X = Scene::getInstance()->getCamera().GetResX();
 	RES_Y = Scene::getInstance()->getCamera().GetResY(); 

@@ -11,6 +11,7 @@ namespace ConfigLoader {
 		return result;
 	}
     
+	// Load primitives from NFF file
 	void loadSceneNFF(const char* fileName, RGB * background, std::vector<Light> * lstLights, std::vector<Object*> * lstObjects, Viewpoint * camera){
 		std::string line = std::string();
         std::ifstream file (fileName);
@@ -103,23 +104,7 @@ namespace ConfigLoader {
                     else if(splitedLine[0] == "c"){
                         cylinderOrCone = 1;
                         continue;
-                    }/*
-                    else if(cylinderOrCone == 1){ // first line
-						cc.base_position.px = atof(splitedLine[1].c_str());
-						cc.base_position.py = atof(splitedLine[2].c_str());
-						cc.base_position.pz = atof(splitedLine[3].c_str());
-						cc.base_radius = atof(splitedLine[4].c_str());
-						cylinderOrCone++;
                     }
-                    else if(cylinderOrCone == 2){ // second line
-						cc.apex_position.px = atof(splitedLine[1].c_str());
-						cc.apex_position.py = atof(splitedLine[2].c_str());
-						cc.apex_position.pz = atof(splitedLine[3].c_str());
-						cc.apex_radius = atof(splitedLine[4].c_str());
-						cc.mtl = m;
-                        cylinderOrCone = 0;
-						scene1->coneAndCylinders.push_back(cc);
-                    }*/
                     
                     // Sphere
                     else if(splitedLine[0] == "s"){

@@ -61,13 +61,13 @@ void Ray::setDirection(glm::vec3 direction) {
 	_direction = direction;
 }
 
-
+// Reflected ray calculation
 void Ray::computeReflectedRay(glm::vec3 Pi, glm::vec3 r) {
 	_origin = Pi + (EPSILON * r);
 	_direction = r;
 }
 
-
+// Refracted ray calculation
 void Ray::computeRefractedRay(glm::vec3 Pi, glm::vec3 Vt, glm::vec3 N, float ior, float iorObject, float * newIOR) {
 	float sinThetaI, sinThetaT, cosThetaT;
 
