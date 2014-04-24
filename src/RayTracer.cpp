@@ -471,7 +471,7 @@ RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::ve
 	glm::vec3 rayDirection = ray->getDirection();
 	incNRays();
 	ray->setRayID(getNRays());
-	glm::vec3 P = ray->getOrigin() + (float)FOCAL_LENGHT * rayDirection; //camera.getEye()
+	glm::vec3 P = ray->getOrigin() + (float)FOCAL_LENGHT * rayDirection; 
 
 	RGB colorT;
 
@@ -482,7 +482,7 @@ RGB RayTracer::depthOfField(RGB * background, std::vector<Light> lights, std::ve
 		float du = (float)rand()/float(RAND_MAX + 1);
 		float dv = (float)rand()/float(RAND_MAX + 1);
 
-		// creating new camera position(or ray start using jittering) //camera.getEye()
+		// creating new camera position(or ray start using jittering) 
 		glm::vec3 ls = ray->getOrigin() - (r / 2.0f)*camera.getXe() - (r / 2.0f)*camera.getYe() + r*(du)*camera.getXe() + r*(dv)*camera.getYe();
 		glm::vec3 direction = glm::normalize(P - ls);
 
