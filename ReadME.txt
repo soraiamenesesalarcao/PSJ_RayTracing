@@ -19,6 +19,7 @@ Os ficheiros submetidos dizem respeito ao código C++ da aplicação, os quais
 Para a concretização deste projecto, foram utilizadas as seguintes bibliotecas:
 - glut
 - glm
+- omp
 
 Uma sugestão de integração do código submetido com as bibliotecas necessárias 
 consiste na seguinte estutura de pastas:
@@ -35,11 +36,11 @@ consiste na seguinte estutura de pastas:
 
 - projects
 	- <nome_do_projecto>
-		- scripts
-			--> aqui entram a pasta "resources" (onde se encontram os ficheiros 
+		- scripts [pasta submetida]
+			--> Aqui entram a pasta "resources" (onde se encontram os ficheiros 
 				.nff) e ainda o ficheiro .vsproj
 		- src [pasta submetida]
-			--> aqui entra o código submetido na pasta src
+			--> Aqui entra o código submetido na pasta src
 		- obj
 			--> Aqui entram os ficheiros de debug gerados pelo VS
 
@@ -67,3 +68,8 @@ Sugere-se que os ficheiros externos a carregar sejam colocados numa pasta
 "resources", incluída dentro da pasta onde se encontra o ficheiro .vsproj 
 (uma vez que é aí que se vai buscar o ficheiro .nff). A alteração explícita do 
 ficheiro a carregar é feita na classe Scene.
+
+O pacote submetido inclui já as seguintes cenas:
+- car.nff
+- snake.nff
+- sphere.nff
